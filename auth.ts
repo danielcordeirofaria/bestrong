@@ -31,7 +31,11 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           if (!user) return null;
 
           const passwordsMatch = await bcrypt.compare(password, user.password);
-          if (passwordsMatch) return user;
+          if (passwordsMatch) {
+            // The authorize callback expects a user object with a string ID.
+            // We convert it here, but our session will use the numeric ID from `auth.d.ts`.
+            return { ...user, id: String(user.id) };
+          }
         }
 
         console.log('Invalid credentials');
