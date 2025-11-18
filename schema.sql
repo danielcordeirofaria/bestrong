@@ -1,10 +1,14 @@
+-- Create a user_role ENUM type for data integrity
+CREATE TYPE user_role AS ENUM ('buyer', 'seller');
+
 -- 1. Users Table
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    password TEXT NOT NULL, -- Quando criar o aith, adicione um hash aqui
-    phone_number VARCHAR(50)
+    password TEXT NOT NULL,
+    phone_number VARCHAR(50),
+    role user_role NOT NULL DEFAULT 'buyer'
 );
 
 -- 2. Addresses Table
@@ -15,8 +19,7 @@ CREATE TABLE IF NOT EXISTS addresses (
     city VARCHAR(100) NOT NULL,
     state VARCHAR(50) NOT NULL,
     zip_code VARCHAR(20) NOT NULL,
-    country VARCHAR(50) NOT NULL,
-    is_default BOOLEAN DEFAULT false
+    country VARCHAR(50) NOT NULL
 );
 
 -- 3. Products Table

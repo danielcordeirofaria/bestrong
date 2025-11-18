@@ -8,6 +8,7 @@ export type User = {
   email: string;
   password: string; // This will be a hashed password.
   phone_number?: string | null;
+  role: 'buyer' | 'seller';
 };
 
 export type Address = {
@@ -18,7 +19,6 @@ export type Address = {
   state: string;
   zip_code: string;
   country: string;
-  is_default?: boolean | null;
 };
 
 export type Product = {
