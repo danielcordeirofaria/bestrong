@@ -116,13 +116,15 @@ export async function authenticate(
 ) {
   try {
     await signIn('credentials', formData);
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof AuthError) {
-      if (error.type === 'CredentialsSignin') {
-        return 'Invalid credentials.';
+      switch (error.type) {
+        case 'CredentialsSignin':
+          return 'Invalid credentials.';
+        default:
+          return 'Something went wrong.';
       }
     }
-    // Re-throw other errors to be handled by Next.js
     throw error;
   }
 }

@@ -22,11 +22,5 @@ export const authConfig = {
       return true; // Permite acesso a todas as outras páginas (ex: /, /login, /register)
     },
   },
-  // Adiciona o matcher aqui para definir quais rotas são protegidas.
-  // Todas as outras rotas serão públicas por padrão.
-  // Ex: /dashboard, /profile, etc.
-  // A expressão regular abaixo faz o middleware rodar em todas as rotas, exceto as de arquivos estáticos.
-  // Isso garante que a lógica de redirecionamento funcione corretamente para todas as páginas.
-  matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
   providers: [], // We will add providers like Credentials here later
 } satisfies NextAuthConfig;
