@@ -54,7 +54,7 @@ export default function LoginForm() {
                 type="email"
                 placeholder="Email address"
                 required
-                className="block w-full rounded-md border border-ui-border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500 focus:border-primary focus:ring-primary"
+                className="input-field"
               />
             </div>
           </div>
@@ -71,7 +71,7 @@ export default function LoginForm() {
                 placeholder="Password"
                 required
                 minLength={6}
-                className="block w-full rounded-md border border-ui-border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500 focus:border-primary focus:ring-primary"
+                className="input-field"
               />
             </div>
           </div>

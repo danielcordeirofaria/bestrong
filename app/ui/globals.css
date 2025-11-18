@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .input-field {
+    @apply block w-full rounded-md border border-ui-border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500 focus:border-primary focus:ring-primary;
+  }
+}
+
 input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
