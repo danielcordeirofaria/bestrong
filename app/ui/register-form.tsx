@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useFormState, useFormStatus } from 'react-dom';
-import { createUser } from '@/app/lib/actions';
+import { createUser, type State } from '@/app/lib/actions';
 import {
   User,
   KeyRound,
@@ -33,7 +33,7 @@ function RegisterButton() {
 }
 
 export default function RegisterForm() {
-  const initialState = { message: null, errors: {} };
+  const initialState: State = { message: null, errors: {} };
   const [state, formAction] = useFormState(createUser, initialState);
 
   return (
@@ -168,31 +168,3 @@ export default function RegisterForm() {
     </>
   );
 }
-
-```
-
-### Adicionando Estilos Globais (Opcional, mas recomendado)
-
-Para evitar repetir as classes de estilo dos inputs, você pode adicioná-las como um estilo base no seu arquivo `app/globals.css` (não fornecido, mas provavelmente existe). Adicione a seguinte classe `@layer` para criar um estilo reutilizável.
-
-```css
-/* Em app/globals.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer components {
-  .input-field {
-    @apply block w-full rounded-md border border-ui-border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500 focus:border-primary focus:ring-primary;
-  }
-}
-```
-
-Depois de adicionar isso ao seu CSS, você pode substituir a longa lista de classes nos inputs do `register-form.tsx` e `login-form.tsx` por apenas `className="input-field"`. Eu já fiz isso no código do formulário de registro acima.
-
-Com o arquivo `app/ui/register-form.tsx` criado, sua página de registro (`/register`) agora terá um formulário funcional que envia os dados para a sua `server action` e os salva no banco de dados.
-
-<!--
-[PROMPT_SUGGESTION]Como posso adicionar o ID e o nome do usuário à sessão do NextAuth?[/PROMPT_SUGGESTION]
-[PROMPT_SUGGESTION]Revise meu formulário de login e sugira melhorias de segurança e experiência do usuário.[/PROMPT_SUGGESTION]
--->
