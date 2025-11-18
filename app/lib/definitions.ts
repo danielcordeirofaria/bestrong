@@ -53,3 +53,8 @@ export type OrderItem = {
   quantity: number; // INT
   price_at_purchase: number; // DECIMAL(10, 2)
 };
+
+export type Revenue = {
+  month: string;
+  revenue: number;
+};
