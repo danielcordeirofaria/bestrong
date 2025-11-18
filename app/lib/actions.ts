@@ -80,7 +80,7 @@ export async function createUser(prevState: State, formData: FormData) {
 
     await sql`
       INSERT INTO addresses (user_id, street, city, state, zip_code, country, is_default)
-      VALUES (${newUserId}, ${street}, ${city}, ${state}, ${zip_code}, ${country}, true);
+      VALUES (${newUserId}, ${street}, ${city}, ${state}, ${zip_code}, ${country}, 'true');
     `;
 
     await sql.query('COMMIT');
