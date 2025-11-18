@@ -3,7 +3,7 @@
 // These types are based on the database schema.
 
 export type User = {
-  id: string; // UUID
+  id: number; // SERIAL
   name: string;
   email: string;
   password: string; // This will be a hashed password.
@@ -11,8 +11,8 @@ export type User = {
 };
 
 export type Address = {
-  id: string; // UUID
-  user_id: string; // Foreign Key to users(id)
+  id: number; // SERIAL
+  user_id: number; // Foreign Key to users(id)
   street: string;
   city: string;
   state: string;
@@ -22,8 +22,8 @@ export type Address = {
 };
 
 export type Product = {
-  id: string; // UUID
-  seller_id: string; // Foreign Key to users(id)
+  id: number; // SERIAL
+  seller_id: number; // Foreign Key to users(id)
   name: string;
   description?: string | null;
   price: number; // DECIMAL(10, 2)
@@ -31,25 +31,25 @@ export type Product = {
 };
 
 export type ProductImage = {
-  id: string; // UUID
-  product_id: string; // Foreign Key to products(id)
+  id: number; // SERIAL
+  product_id: number; // Foreign Key to products(id)
   image_url: string;
   alt_text?: string | null;
   is_primary?: boolean | null;
 };
 
 export type Order = {
-  id: string; // UUID
-  client_id: string; // Foreign Key to users(id)
+  id: number; // SERIAL
+  client_id: number; // Foreign Key to users(id)
   status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
-  shipping_address_id?: string | null; // Foreign Key to addresses(id)
+  shipping_address_id?: number | null; // Foreign Key to addresses(id)
   total_amount?: number | null; // DECIMAL(10, 2)
 };
 
 export type OrderItem = {
-  id: string; // UUID
-  order_id: string; // Foreign Key to orders(id)
-  product_id: string; // Foreign Key to products(id)
+  id: number; // SERIAL
+  order_id: number; // Foreign Key to orders(id)
+  product_id: number; // Foreign Key to products(id)
   quantity: number; // INT
   price_at_purchase: number; // DECIMAL(10, 2)
 };
