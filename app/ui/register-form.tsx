@@ -2,15 +2,18 @@
 
 import Link from 'next/link';
 import { useFormState, useFormStatus } from 'react-dom';
-import { createUser, State } from '@/app/lib/actions';
+import { createUser } from '@/app/lib/actions';
 import {
   User,
-  AtSign,
   KeyRound,
-  Phone,
+  AtSign,
   Home,
+  Building,
   MapPin,
+  Mailbox,
   Globe,
+  Phone,
+  AlertCircle,
 } from 'lucide-react';
 import React from 'react';
 
@@ -20,136 +23,176 @@ function RegisterButton() {
   return (
     <button
       type="submit"
-      className="group relative flex w-full justify-center rounded-md border border-transparent bg-primary py-2 px-4 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:bg-primary/70 disabled:cursor-not-allowed"
+      className="group relative flex w-full justify-center rounded-md border border-transparent bg-primary py-2 px-4 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-primary/70"
       aria-disabled={pending}
       disabled={pending}
     >
-      {pending ? 'Creating Account...' : 'Create account'}
+      {pending ? 'Creating Account...' : 'Create Account'}
     </button>
   );
 }
 
-const RegisterForm = () => {
-  const initialState: State = { message: null, errors: {} };
-  const [state, dispatch] = useFormState(createUser, initialState);
+export default function RegisterForm() {
+  const initialState = { message: null, errors: {} };
+  const [state, formAction] = useFormState(createUser, initialState);
 
   return (
     <>
       <div>
         <h2 className="mt-6 text-center font-serif text-3xl font-bold tracking-tight text-text-main">
-          Create a new account
+          Create your account
         </h2>
         <p className="mt-2 text-center text-sm text-secondary">
           Already have an account?{' '}
-          <Link href="/login" className="font-medium text-primary hover:text-primary/80">
+          <Link
+            href="/login"
+            className="font-medium text-primary hover:text-primary/80"
+          >
             Sign in
           </Link>
         </p>
       </div>
-      <form action={dispatch} className="mt-8 space-y-6">
-        {/* Personal Info */}
-        <fieldset className="space-y-4">
-          <legend className="mb-2 font-semibold text-text-main">Personal Info</legend>
-          {/* Name Field */}
+
+      <form action={formAction} className="mt-8 space-y-6">
+        <div className="space-y-4">
+          {/* Personal Information */}
           <div className="space-y-1">
+            <label htmlFor="name" className="sr-only">Name</label>
             <div className="relative">
               <User className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <input id="name" name="name" type="text" placeholder="Full name" required className="block w-full rounded-md border border-ui-border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500 focus:border-primary focus:ring-primary" aria-describedby="name-error" />
+              <input id="name" name="name" type="text" placeholder="Full Name" required className="input-field" />
             </div>
-            <div id="name-error" aria-live="polite" aria-atomic="true">
-              {state.errors?.name && state.errors.name.map((error: string) => (<p className="mt-1 text-xs text-red-500" key={error}>{error}</p>))}
-            </div>
+            {state.errors?.name && <p className="text-sm text-red-500">{state.errors.name[0]}</p>}
           </div>
-          {/* Email Field */}
+
           <div className="space-y-1">
+            <label htmlFor="email" className="sr-only">Email</label>
             <div className="relative">
               <AtSign className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <input id="email" name="email" type="email" placeholder="Email address" required className="block w-full rounded-md border border-ui-border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500 focus:border-primary focus:ring-primary" aria-describedby="email-error" />
+              <input id="email" name="email" type="email" placeholder="Email address" required className="input-field" />
             </div>
-            <div id="email-error" aria-live="polite" aria-atomic="true">
-              {state.errors?.email && state.errors.email.map((error: string) => (<p className="mt-1 text-xs text-red-500" key={error}>{error}</p>))}
-            </div>
+            {state.errors?.email && <p className="text-sm text-red-500">{state.errors.email[0]}</p>}
           </div>
-          {/* Password Field */}
+
           <div className="space-y-1">
+            <label htmlFor="password" className="sr-only">Password</label>
             <div className="relative">
               <KeyRound className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <input id="password" name="password" type="password" placeholder="Password" required minLength={6} className="block w-full rounded-md border border-ui-border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500 focus:border-primary focus:ring-primary" aria-describedby="password-error" />
+              <input id="password" name="password" type="password" placeholder="Password" required minLength={6} className="input-field" />
             </div>
-            <div id="password-error" aria-live="polite" aria-atomic="true">
-              {state.errors?.password && state.errors.password.map((error: string) => (<p className="mt-1 text-xs text-red-500" key={error}>{error}</p>))}
-            </div>
+            {state.errors?.password && <p className="text-sm text-red-500">{state.errors.password[0]}</p>}
           </div>
-          {/* Phone Number Field */}
+
           <div className="space-y-1">
+            <label htmlFor="phone_number" className="sr-only">Phone Number (Optional)</label>
             <div className="relative">
               <Phone className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <input id="phone_number" name="phone_number" type="tel" placeholder="Phone number (Optional)" className="block w-full rounded-md border border-ui-border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500 focus:border-primary focus:ring-primary" aria-describedby="phone-error" />
-            </div>
-            <div id="phone-error" aria-live="polite" aria-atomic="true">
-              {state.errors?.phone_number && state.errors.phone_number.map((error: string) => (<p className="mt-1 text-xs text-red-500" key={error}>{error}</p>))}
+              <input id="phone_number" name="phone_number" type="tel" placeholder="Phone Number (Optional)" className="input-field" />
             </div>
           </div>
-        </fieldset>
 
-        {/* Shipping Address */}
-        <fieldset className="space-y-4">
-          <legend className="mb-2 font-semibold text-text-main">Shipping Address</legend>
-          {/* Street Field */}
+          {/* Divider */}
+          <div className="relative py-2">
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+              <div className="w-full border-t border-ui-border" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-background px-2 text-sm text-gray-500">Shipping Address</span>
+            </div>
+          </div>
+
+          {/* Address Information */}
           <div className="space-y-1">
+            <label htmlFor="street" className="sr-only">Street</label>
             <div className="relative">
               <Home className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <input id="street" name="street" type="text" placeholder="Street address" required className="block w-full rounded-md border border-ui-border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500 focus:border-primary focus:ring-primary" aria-describedby="street-error" />
+              <input id="street" name="street" type="text" placeholder="Street Address" required className="input-field" />
             </div>
-            <div id="street-error" aria-live="polite" aria-atomic="true">
-              {state.errors?.street && state.errors.street.map((error: string) => (<p className="mt-1 text-xs text-red-500" key={error}>{error}</p>))}
-            </div>
+            {state.errors?.street && <p className="text-sm text-red-500">{state.errors.street[0]}</p>}
           </div>
-          {/* City Field */}
-          <div className="space-y-1">
-            <div className="relative">
-              <MapPin className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <input id="city" name="city" type="text" placeholder="City" required className="block w-full rounded-md border border-ui-border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500 focus:border-primary focus:ring-primary" aria-describedby="city-error" />
-            </div>
-            <div id="city-error" aria-live="polite" aria-atomic="true">
-              {state.errors?.city && state.errors.city.map((error: string) => (<p className="mt-1 text-xs text-red-500" key={error}>{error}</p>))}
-            </div>
-          </div>
-          {/* State and ZIP Code */}
-          <div className="flex gap-4">
-            <div className="w-1/2 space-y-1">
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-1">
+              <label htmlFor="city" className="sr-only">City</label>
               <div className="relative">
-                <input id="state" name="state" type="text" placeholder="State / Province" required className="block w-full rounded-md border border-ui-border py-2 px-3 text-sm outline-2 placeholder:text-gray-500 focus:border-primary focus:ring-primary" aria-describedby="state-error" />
+                <Building className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <input id="city" name="city" type="text" placeholder="City" required className="input-field" />
               </div>
-              <div id="state-error" aria-live="polite" aria-atomic="true">
-                {state.errors?.state && state.errors.state.map((error: string) => (<p className="mt-1 text-xs text-red-500" key={error}>{error}</p>))}
-              </div>
+              {state.errors?.city && <p className="text-sm text-red-500">{state.errors.city[0]}</p>}
             </div>
-            <div className="w-1/2 space-y-1">
+            <div className="space-y-1">
+              <label htmlFor="state" className="sr-only">State</label>
               <div className="relative">
-                <input id="zip_code" name="zip_code" type="text" placeholder="ZIP / Postal code" required className="block w-full rounded-md border border-ui-border py-2 px-3 text-sm outline-2 placeholder:text-gray-500 focus:border-primary focus:ring-primary" aria-describedby="zip-error" />
+                <MapPin className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <input id="state" name="state" type="text" placeholder="State / Province" required className="input-field" />
               </div>
-              <div id="zip-error" aria-live="polite" aria-atomic="true">
-                {state.errors?.zip_code && state.errors.zip_code.map((error: string) => (<p className="mt-1 text-xs text-red-500" key={error}>{error}</p>))}
-              </div>
+              {state.errors?.state && <p className="text-sm text-red-500">{state.errors.state[0]}</p>}
             </div>
           </div>
-          {/* Country Field */}
-          <div className="space-y-1">
-            <div className="relative">
-              <Globe className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <input id="country" name="country" type="text" placeholder="Country" required className="block w-full rounded-md border border-ui-border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500 focus:border-primary focus:ring-primary" aria-describedby="country-error" />
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-1">
+              <label htmlFor="zip_code" className="sr-only">ZIP Code</label>
+              <div className="relative">
+                <Mailbox className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <input id="zip_code" name="zip_code" type="text" placeholder="ZIP / Postal Code" required className="input-field" />
+              </div>
+              {state.errors?.zip_code && <p className="text-sm text-red-500">{state.errors.zip_code[0]}</p>}
             </div>
-            <div id="country-error" aria-live="polite" aria-atomic="true">
-              {state.errors?.country && state.errors.country.map((error: string) => (<p className="mt-1 text-xs text-red-500" key={error}>{error}</p>))}
+            <div className="space-y-1">
+              <label htmlFor="country" className="sr-only">Country</label>
+              <div className="relative">
+                <Globe className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <input id="country" name="country" type="text" placeholder="Country" required className="input-field" />
+              </div>
+              {state.errors?.country && <p className="text-sm text-red-500">{state.errors.country[0]}</p>}
             </div>
           </div>
-        </fieldset>
+        </div>
+
+        <div
+          className="flex h-8 items-end space-x-1"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {state.message && (
+            <>
+              <AlertCircle className="h-5 w-5 text-red-500" />
+              <p className="text-sm text-red-500">{state.message}</p>
+            </>
+          )}
+        </div>
 
         <RegisterButton />
       </form>
     </>
   );
-};
+}
 
-export default RegisterForm;
+```
+
+### Adicionando Estilos Globais (Opcional, mas recomendado)
+
+Para evitar repetir as classes de estilo dos inputs, você pode adicioná-las como um estilo base no seu arquivo `app/globals.css` (não fornecido, mas provavelmente existe). Adicione a seguinte classe `@layer` para criar um estilo reutilizável.
+
+```css
+/* Em app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .input-field {
+    @apply block w-full rounded-md border border-ui-border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500 focus:border-primary focus:ring-primary;
+  }
+}
+```
+
+Depois de adicionar isso ao seu CSS, você pode substituir a longa lista de classes nos inputs do `register-form.tsx` e `login-form.tsx` por apenas `className="input-field"`. Eu já fiz isso no código do formulário de registro acima.
+
+Com o arquivo `app/ui/register-form.tsx` criado, sua página de registro (`/register`) agora terá um formulário funcional que envia os dados para a sua `server action` e os salva no banco de dados.
+
+<!--
+[PROMPT_SUGGESTION]Como posso adicionar o ID e o nome do usuário à sessão do NextAuth?[/PROMPT_SUGGESTION]
+[PROMPT_SUGGESTION]Revise meu formulário de login e sugira melhorias de segurança e experiência do usuário.[/PROMPT_SUGGESTION]
+-->
