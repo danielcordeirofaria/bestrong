@@ -9,8 +9,10 @@ import { redirect } from 'next/navigation';
 const FormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
-  phone_number: z.string().optional(),
+  password: z
+    .string()
+    .min(6, { message: 'Password must be at least 6 characters.' }),
+  phone_number: z.string().optional().or(z.literal('')), // Aceita opcional ou string vazia
   // Address fields
   street: z.string().min(1, { message: 'Street is required.' }),
   city: z.string().min(1, { message: 'City is required.' }),
@@ -61,14 +63,17 @@ export async function createUser(prevState: State, formData: FormData) {
   // 3. Hash the password
   const hashedPassword = await bcrypt.hash(password, 10);
 
+  // Garante que o número de telefone seja nulo se não for fornecido
+  const finalPhoneNumber = phone_number || null;
+
   // 4. Insert data into the database
   try {
     // Using a transaction to ensure both user and address are created successfully.
     await sql.query('BEGIN');
-    
+
     const userResult = await sql`
       INSERT INTO users (name, email, password, phone_number)
-      VALUES (${name}, ${email}, ${hashedPassword}, ${phone_number})
+      VALUES (${name}, ${email}, ${hashedPassword}, ${finalPhoneNumber})
       RETURNING id;
     `;
     const newUserId = userResult.rows[0].id;
@@ -80,11 +85,15 @@ export async function createUser(prevState: State, formData: FormData) {
 
     await sql.query('COMMIT');
 
-  } catch (error) {
+  } catch (error: unknown) {
     // Handle database errors (e.g., unique email constraint)
     await sql.query('ROLLBACK');
     // Check for unique email violation
-    if (error instanceof Error && error.message.includes('duplicate key value violates unique constraint')) {
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      (error as any).code === '23505' // Código de erro do PostgreSQL para violação de unicidade
+    ) {
       return { message: 'An account with this email already exists.' };
     }
 
