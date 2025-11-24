@@ -14,6 +14,8 @@ import {
   Globe,
   Phone,
   AlertCircle,
+  Briefcase,
+  ChevronDown,
 } from 'lucide-react';
 import React from 'react';
 
@@ -89,6 +91,26 @@ export default function RegisterForm() {
               <Phone className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
               <input id="phone_number" name="phone_number" type="tel" placeholder="Phone Number (Optional)" className="input-field" />
             </div>
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor="role" className="sr-only">Role</label>
+            <div className="relative">
+              <Briefcase className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <select
+                id="role"
+                name="role"
+                required
+                className="input-field appearance-none"
+                defaultValue=""
+              >
+                <option value="" disabled>Select your role</option>
+                <option value="buyer">Buyer</option>
+                <option value="seller">Seller</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
+            </div>
+            {state.errors?.role && <p className="text-sm text-red-500">{state.errors.role[0]}</p>}
           </div>
 
           {/* Divider */}

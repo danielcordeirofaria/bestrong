@@ -12,7 +12,10 @@ const FormSchema = z.object({
   password: z
     .string()
     .min(6, { message: 'Password must be at least 6 characters.' }),
-  phone_number: z.string().optional().or(z.literal('')), // Aceita opcional ou string vazia
+  phone_number: z.string().optional().or(z.literal('')),
+  role: z.enum(['buyer', 'seller'], {
+    invalid_type_error: 'Please select a user role.',
+  }),
   // Address fields
   street: z.string().min(1, { message: 'Street is required.' }),
   city: z.string().min(1, { message: 'City is required.' }),
@@ -27,6 +30,7 @@ export type State = {
     email?: string[];
     password?: string[];
     phone_number?: string[];
+    role?: string[];
     street?: string[];
     city?: string[];
     state?: string[];
@@ -43,6 +47,7 @@ export async function createUser(prevState: State, formData: FormData) {
     email: formData.get('email'),
     password: formData.get('password'),
     phone_number: formData.get('phone_number'),
+    role: formData.get('role'),
     street: formData.get('street'),
     city: formData.get('city'),
     state: formData.get('state'),
@@ -58,7 +63,7 @@ export async function createUser(prevState: State, formData: FormData) {
     };
   }
 
-  const { name, email, password, phone_number, street, city, state, zip_code, country } = validatedFields.data;
+  const { name, email, password, phone_number, role, street, city, state, zip_code, country } = validatedFields.data;
 
   // 3. Hash the password
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -72,8 +77,8 @@ export async function createUser(prevState: State, formData: FormData) {
     await sql.query('BEGIN');
 
     const userResult = await sql`
-      INSERT INTO users (name, email, password, phone_number)
-      VALUES (${name}, ${email}, ${hashedPassword}, ${finalPhoneNumber})
+      INSERT INTO users (name, email, password, phone_number, role)
+      VALUES (${name}, ${email}, ${hashedPassword}, ${finalPhoneNumber}, ${role})
       RETURNING id;
     `;
     const newUserId = userResult.rows[0].id;
