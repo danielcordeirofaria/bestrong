@@ -88,7 +88,7 @@ export async function createUser(prevState: State, formData: FormData) {
     if (
       error instanceof Error &&
       'code' in error &&
-      (error as any).code === '23505'
+      error.code === '23505'
     ) {
       return { message: 'An account with this email already exists.' };
     }
@@ -121,5 +121,4 @@ export async function authenticate(
     }
     throw error;
   }
-  redirect('/dashboard');
 }
