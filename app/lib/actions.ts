@@ -5,7 +5,7 @@ import { sql } from '@vercel/postgres';
 import bcrypt from 'bcrypt';
 import { redirect } from 'next/navigation';
 
-// Validation schema with Zod
+
 const FormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -16,7 +16,6 @@ const FormSchema = z.object({
   role: z.enum(['buyer', 'seller'], {
     invalid_type_error: 'Please select a user role.',
   }),
-  // Address fields
   street: z.string().min(1, { message: 'Street is required.' }),
   city: z.string().min(1, { message: 'City is required.' }),
   state: z.string().min(1, { message: 'State is required.' }),
@@ -41,7 +40,6 @@ export type State = {
 };
 
 export async function createUser(prevState: State, formData: FormData) {
-  // 1. Validate the form data on the server
   const validatedFields = FormSchema.safeParse({
     name: formData.get('name'),
     email: formData.get('email'),
@@ -55,7 +53,6 @@ export async function createUser(prevState: State, formData: FormData) {
     country: formData.get('country'),
   });
 
-  // 2. If validation fails, return the errors
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
@@ -65,15 +62,11 @@ export async function createUser(prevState: State, formData: FormData) {
 
   const { name, email, password, phone_number, role, street, city, state, zip_code, country } = validatedFields.data;
 
-  // 3. Hash the password
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  // Garante que o número de telefone seja nulo se não for fornecido
   const finalPhoneNumber = phone_number || null;
 
-  // 4. Insert data into the database
   try {
-    // Using a transaction to ensure both user and address are created successfully.
     await sql.query('BEGIN');
 
     const userResult = await sql`
@@ -91,13 +84,11 @@ export async function createUser(prevState: State, formData: FormData) {
     await sql.query('COMMIT');
 
   } catch (error: unknown) {
-    // Handle database errors (e.g., unique email constraint)
     await sql.query('ROLLBACK');
-    // Check for unique email violation
     if (
       error instanceof Error &&
       'code' in error &&
-      (error as any).code === '23505' // Código de erro do PostgreSQL para violação de unicidade
+      (error as any).code === '23505'
     ) {
       return { message: 'An account with this email already exists.' };
     }
@@ -105,14 +96,12 @@ export async function createUser(prevState: State, formData: FormData) {
     return { message: 'Database Error: Failed to create user. Please try again.' };
   }
 
-  // 5. Redirect to the login page on success
   redirect('/login');
 }
 
-// --- Login Action ---
 export type LoginState = string | undefined;
 
-import { signIn } from '@/auth'; // Make sure this path points to your auth.ts file
+import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 
 export async function authenticate(
@@ -132,4 +121,5 @@ export async function authenticate(
     }
     throw error;
   }
+  redirect('/dashboard');
 }

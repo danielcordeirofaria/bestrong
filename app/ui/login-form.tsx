@@ -31,12 +31,12 @@ export default function LoginForm() {
           Sign in to your account
         </h2>
         <p className="mt-2 text-center text-sm text-secondary">
-          Don&apos;t have an account?{' '}
+          Or{' '}
           <Link
             href="/register"
             className="font-medium text-primary hover:text-primary/80"
           >
-            Sign up
+            create a new account
           </Link>
         </p>
       </div>

@@ -1,7 +1,3 @@
-// This file contains TypeScript type definitions for your data.
-// It describes the shape of the data, and what data type each property should accept.
-// These types are based on the database schema.
-
 export type User = {
   id: number; // SERIAL
   name: string;
