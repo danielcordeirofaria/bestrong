@@ -7,7 +7,7 @@ interface SellerDashboardProps {
 }
 
 export default function SellerDashboard({ user }: SellerDashboardProps) {
-  // No futuro, você buscará dados reais do banco de dados aqui.
+  // No futuro, buscará dados reais do banco de dados aqui.
   const totalSales = 1250.75;
   const totalProducts = 15;
 
