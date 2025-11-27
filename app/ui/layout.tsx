@@ -2,8 +2,8 @@ import React from 'react';
 import { Merriweather, Lato } from 'next/font/google';
 import './ui/globals.css';
 
-import Header from '@/app/components/header/Header';
-import Footer from '@/app/components/footer/Footer';
+import Header from '@/components/header/Header';
+import Footer from '@/components/footer/Footer';
 
 const merriweather = Merriweather({
   subsets: ['latin'],
