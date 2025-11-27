@@ -1,5 +1,5 @@
 -- Create a user_role ENUM type for data integrity
-CREATE TYPE user_role AS ENUM ('buyer', 'seller');
+CREATE TYPE IF NOT EXISTS user_role AS ENUM ('buyer', 'seller');
 
 -- 1. Users Table
 CREATE TABLE IF NOT EXISTS users (
