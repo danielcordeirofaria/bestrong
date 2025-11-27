@@ -1,0 +1,12 @@
+.link {
+  display: flex;
+}
+
+.p{
+    margin-right: 0.5rem;
+}
+
+.pCart{
+    display: flex;
+    align-items: center;
+}

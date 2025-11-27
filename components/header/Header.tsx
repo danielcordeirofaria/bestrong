@@ -1,7 +1,8 @@
 import Image from 'next/image';
+import styles from './header.module.css';
 import Link from 'next/link';
 import React from 'react';
-import { ShoppingCart, User } from 'lucide-react';
+import { ShoppingCart, User, LayoutDashboard } from 'lucide-react';
 import { auth } from '@/auth';
 import LogoutButton from '@/components/ui/logout-button';
 
@@ -26,14 +27,24 @@ const Header = async () => {
             <Link href="/">Handcrafted Haven</Link>
           </h1>
           <div className="flex items-center gap-5">
+            <Link href="/dashboard" aria-label="Dashboard" className={styles.link} >
+              <p className={styles.p}>Dashboard</p>
+              <LayoutDashboard className="h-6 w-6 text-text-main" />
+            </Link>
             <button className="relative" aria-label="Cart">
-              <ShoppingCart className="h-6 w-6 text-text-main" />
+              <div className={styles.pCart}>
+                <p className={styles.p}>Cart</p>
+                <ShoppingCart className="h-6 w-6 text-text-main" />
+              </div>
               <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
                 0
               </span>
             </button>
             {session?.user ? (
-              <LogoutButton />
+              <>
+
+                <LogoutButton />
+              </>
             ) : (
               <Link href="/login" aria-label="Login">
                 <User className="h-6 w-6 text-text-main" />
