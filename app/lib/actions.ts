@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { sql } from '@vercel/postgres';
 import bcrypt from 'bcrypt';
 import { redirect } from 'next/navigation';
-
+import { signIn, signOut } from '@/auth';
 
 const FormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -99,26 +99,21 @@ export async function createUser(prevState: State, formData: FormData) {
   redirect('/login');
 }
 
-export type LoginState = string | undefined;
-
-import { signIn, signOut } from '@/auth';
-import { AuthError } from 'next-auth';
-
 export async function authenticate(
-  prevState: LoginState,
+  prevState: string | undefined,
   formData: FormData,
 ) {
   try {
     await signIn('credentials', formData);
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case 'CredentialsSignin':
-          return 'Invalid credentials.';
-        default:
-          return 'Something went wrong.';
-      }
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('CredentialsSignin')) {
+      return 'Invalid credentials.';
     }
     throw error;
   }
+}
+
+export async function signOutAction() {
+  console.log('Server Action: signOutAction called!');
+  await signOut();
 }

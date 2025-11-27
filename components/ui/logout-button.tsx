@@ -1,12 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import LogoutModal from './logout-modal';
 import { LogOut } from 'lucide-react';
 import { signOutAction } from '@/app/lib/auth-actions';
 
+
 export default function LogoutButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const handleSignOut = () => {
+    startTransition(() => {
+      signOutAction().then(() => {
+        setIsModalOpen(false);
+        router.refresh();
+      });
+    });
+  };
 
   return (
     <>
@@ -18,7 +31,8 @@ export default function LogoutButton() {
       <LogoutModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onConfirm={signOutAction} // Passa a Server Action diretamente
+        onConfirm={handleSignOut}
+        isConfirming={isPending}
       />
     </>
   );

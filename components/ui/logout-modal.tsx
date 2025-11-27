@@ -5,11 +5,16 @@ import React from 'react';
 interface LogoutModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => Promise<void>; // Ação agora é uma Promise
+  onConfirm: () => void;
+  isConfirming?: boolean;
 }
 
-export default function LogoutModal({ isOpen, onClose, onConfirm }: LogoutModalProps) {
-
+export default function LogoutModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  isConfirming = false,
+}: LogoutModalProps) {
   if (!isOpen) {
     return null;
   }
@@ -22,17 +27,20 @@ export default function LogoutModal({ isOpen, onClose, onConfirm }: LogoutModalP
           Are you sure you want to sign out?
         </p>
         <div className="mt-6 flex justify-end space-x-4">
-          <button type="button" onClick={onClose} className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isConfirming}
+            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
+          >
             Cancel
           </button>
-          {/* Este botão agora chama a Server Action diretamente */}
           <button
-            onClick={() => {
-              console.log('Confirm button clicked, calling onConfirm action...');
-              onConfirm();
-            }}
-            className="rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-            Sign Out
+            onClick={onConfirm}
+            disabled={isConfirming}
+            className="rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-red-400"
+          >
+            {isConfirming ? 'Signing Out...' : 'Sign Out'}
           </button>
         </div>
       </div>
