@@ -33,8 +33,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
           const passwordsMatch = await bcrypt.compare(password, user.password);
           if (passwordsMatch) {
-            // The authorize callback expects a user object with a string ID.
-            // We convert it here, but our session will use the numeric ID from `auth.d.ts`.
             return { ...user, id: String(user.id) };
           }
         }
