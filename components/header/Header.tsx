@@ -3,7 +3,7 @@ import Link from 'next/link';
 import React from 'react';
 import { ShoppingCart, User } from 'lucide-react';
 import { auth } from '@/auth';
-import LogoutButton from '@/app/ui/logout-button';
+import LogoutButton from '@/components/ui/logout-button';
 
 const Header = async () => {
   const session = await auth();

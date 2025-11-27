@@ -1,6 +1,6 @@
 import React from 'react';
 import { Merriweather, Lato } from 'next/font/google';
-import './ui/globals.css';
+import './globals.css';
 
 import Header from '@/components/header/Header';
 import Footer from '@/components/footer/Footer';

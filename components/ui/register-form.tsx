@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useFormState, useFormStatus } from 'react-dom';
-import { createUser, type State } from '@/app/lib/actions';
 import {
   User,
   KeyRound,
@@ -18,6 +17,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import React from 'react';
+import { createUser, State } from '@/app/lib/actions';
 
 function RegisterButton() {
   const { pending } = useFormStatus();

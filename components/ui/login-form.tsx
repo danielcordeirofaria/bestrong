@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { useFormState, useFormStatus } from 'react-dom';
-import { authenticate } from '@/app/lib/actions';
 import { AtSign, KeyRound, AlertCircle } from 'lucide-react';
 import React from 'react';
+import { authenticate } from '@/app/lib/actions';
 
 function LoginButton() {
   const { pending } = useFormStatus();
