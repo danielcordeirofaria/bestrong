@@ -1,17 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { signOutAction } from '@/app/lib/actions';
 import LogoutModal from './logout-modal';
 import { LogOut } from 'lucide-react';
 
 export default function LogoutButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const handleConfirm = () => {
+    // Submete o formulário usando a referência
+    formRef.current?.requestSubmit();
+  };
 
   return (
     <>
       {/* Este formulário será submetido pelo botão de confirmação no modal */}
-      <form action={signOutAction}>
+      <form action={signOutAction} ref={formRef}>
         <button
           type="button" // Importante: tipo 'button' para não submeter o formulário ao abrir o modal
           onClick={() => setIsModalOpen(true)}
@@ -25,7 +31,7 @@ export default function LogoutButton() {
       <LogoutModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onConfirm={() => document.querySelector('form[action*="signOutAction"]')?.requestSubmit()}
+        onConfirm={handleConfirm}
       />
     </>
   );
