@@ -3,6 +3,7 @@ import Link from 'next/link';
 import React from 'react';
 import { ShoppingCart, User } from 'lucide-react';
 import { auth } from '@/auth';
+import LogoutButton from '@/app/ui/logout-button';
 
 const Header = async () => {
   const session = await auth();
@@ -32,9 +33,7 @@ const Header = async () => {
               </span>
             </button>
             {session?.user ? (
-              <button aria-label="My Account">
-                <User className="h-6 w-6 text-text-main" />
-              </button>
+              <LogoutButton />
             ) : (
               <Link href="/login" aria-label="Login">
                 <User className="h-6 w-6 text-text-main" />

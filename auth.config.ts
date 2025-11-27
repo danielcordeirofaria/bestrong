@@ -20,17 +20,14 @@ export const authConfig = {
       const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
       const isOnProfile = nextUrl.pathname.startsWith('/profile');
 
-      // 1. Proteger as rotas do dashboard e profile
       if (isOnDashboard || isOnProfile) {
         if (isLoggedIn) return true;
-        return false; // Redireciona usuários não autenticados para a página de login
+        return false;
       } 
-      // 2. Redirecionar usuários logados para o dashboard se tentarem acessar login/registro
       else if (isLoggedIn && (nextUrl.pathname.startsWith('/login') || nextUrl.pathname.startsWith('/register'))) {
         return Response.redirect(new URL('/dashboard', nextUrl));
       }
 
-      // 3. Permitir acesso a todas as outras páginas (home, etc.) para todos os usuários
       return true;
     },
   },
