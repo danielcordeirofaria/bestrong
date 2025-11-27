@@ -1,7 +1,7 @@
 'use client';
 
 import { signOutAction } from '@/app/lib/auth-actions';
-import ConfirmationDialog from '@/app/lib/confirmation-dialog';
+import ConfirmationDialog from '@/components/ui/confirmation-dialog';
 import React, { useState, useTransition } from 'react';
 
 export function SignOutButton() {
