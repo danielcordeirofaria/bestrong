@@ -124,5 +124,6 @@ export async function authenticate(
 }
 
 export async function signOutAction() {
+  console.log('Server Action: signOutAction called!'); // LOG 3: Verifica se a ação no servidor foi alcançada
   await signOut({ redirectTo: '/' });
 }
