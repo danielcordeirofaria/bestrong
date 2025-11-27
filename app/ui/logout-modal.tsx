@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import { signOutAction } from '@/app/lib/actions';
-
+import { signOutAction } from '@/app/lib/auth-actions';
 interface LogoutModalProps {
   isOpen: boolean;
   onClose: () => void;
