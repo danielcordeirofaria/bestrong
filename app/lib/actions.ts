@@ -2,9 +2,11 @@
 
 import { z } from 'zod';
 import { sql } from '@vercel/postgres';
+import { put } from '@vercel/blob';
 import bcrypt from 'bcrypt';
 import { redirect } from 'next/navigation';
-import { signIn, signOut } from '@/auth';
+import { signIn, signOut, auth } from '@/auth';
+import { revalidatePath } from 'next/cache';
 
 const FormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -23,6 +25,26 @@ const FormSchema = z.object({
   country: z.string().min(1, { message: 'Country is required.' }),
 });
 
+const ProductSchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  description: z.string().optional(),
+  price: z.coerce
+    .number()
+    .gt(0, { message: 'Price must be greater than $0.' }),
+  quantity: z.coerce
+    .number()
+    .int()
+    .min(0, { message: 'Quantity must be at least 0.' }),
+  image: z
+    .instanceof(File, { message: 'Image is required.' })
+    .refine((file) => file.size > 0, 'Image is required.')
+    .refine((file) => file.size <= 5 * 1024 * 1024, `Max image size is 5MB.`)
+    .refine(
+      (file) => ['image/jpeg', 'image/png', 'image/webp'].includes(file.type),
+      'Only .jpg, .png, and .webp formats are supported.'
+    ),
+});
+
 export type State = {
   errors?: {
     name?: string[];
@@ -35,6 +57,10 @@ export type State = {
     state?: string[];
     zip_code?: string[];
     country?: string[];
+    description?: string[];
+    price?: string[];
+    quantity?: string[];
+    image?: string[];
   };
   message?: string | null;
 };
@@ -116,4 +142,74 @@ export async function authenticate(
 export async function signOutAction() {
   console.log('Server Action: signOutAction called!');
   await signOut();
+}
+
+export async function createProduct(prevState: State, formData: FormData): Promise<State> {
+  console.log('\n--- [Server Action] createProduct started ---');
+  const session = await auth();
+  if (!session?.user?.id) {
+    console.error('[Server Action] Error: User not authenticated.');
+    return {
+      message: 'You must be logged in to create a product.',
+    };
+  }
+  console.log(`[Server Action] User authenticated: ${session.user.id}`);
+
+  const validatedFields = ProductSchema.safeParse({
+    name: formData.get('name'),
+    description: formData.get('description'),
+    price: formData.get('price'),
+    quantity: formData.get('quantity'),
+    image: formData.get('image'),
+  });
+
+  if (!validatedFields.success) {
+    console.error('[Server Action] Validation failed:', validatedFields.error.flatten().fieldErrors);
+    return {
+      errors: validatedFields.error.flatten().fieldErrors as any,
+      message: 'Missing Fields. Failed to Create Product.',
+    };
+  }
+
+  const { name, description, price, quantity, image } = validatedFields.data;
+  console.log('[Server Action] Validation successful. Data:', { name, description, price, quantity, imageName: image.name });
+  const sellerId = session.user.id;
+
+  try {
+    console.log('[Server Action] Uploading image to Vercel Blob...');
+    const blob = await put(image.name, image, {
+      access: 'public',
+      token: process.env.BESTRONGBLOB_READ_WRITE_TOKEN,
+    });
+    console.log('[Server Action] Image uploaded. URL:', blob.url);
+
+    await sql.query('BEGIN');
+    console.log('[Server Action] Database transaction started.');
+
+    const productResult = await sql`
+      INSERT INTO products (seller_id, name, description, price, quantity)
+      VALUES (${sellerId}, ${name}, ${description}, ${price}, ${quantity})
+      RETURNING id
+    `;
+    const productId = productResult.rows[0].id;
+    console.log(`[Server Action] Inserted into 'products' table. New product ID: ${productId}`);
+
+    await sql`
+      INSERT INTO product_images (product_id, image_url, is_primary)
+      VALUES (${productId}, ${blob.url}, ${true})
+    `;
+
+    await sql.query('COMMIT');
+    console.log("[Server Action] Inserted into 'product_images' and committed transaction.");
+  } catch (error) {
+    await sql.query('ROLLBACK');
+    console.error('[Server Action] Database transaction failed. Rolling back.', error);
+    return {
+      message: `Database Error: Failed to Create Product. ${(error as Error).message}`,
+    };
+  }
+
+  console.log('[Server Action] Product created successfully. Revalidating path and redirecting...');
+  revalidatePath('/dashboard/products');
+  redirect('/dashboard/products');
 }
