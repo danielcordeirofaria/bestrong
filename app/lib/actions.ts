@@ -65,7 +65,7 @@ export type State = {
   message?: string | null;
 };
 
-export async function createUser(prevState: State, formData: FormData) {
+export async function createUser(prevState: State, formData: FormData): Promise<State> {
   const validatedFields = FormSchema.safeParse({
     name: formData.get('name'),
     email: formData.get('email'),
