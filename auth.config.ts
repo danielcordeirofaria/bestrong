@@ -8,11 +8,13 @@ export const authConfig = {
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role;
+        token.id = user.id;
       }
       return token;
     },
     async session({ session, token }) {
       session.user.role = token.role as 'buyer' | 'seller';
+      session.user.id = token.id as string;
       return session;
     },
     authorized({ auth, request: { nextUrl } }) {
@@ -23,7 +25,7 @@ export const authConfig = {
       if (isOnDashboard || isOnProfile) {
         if (isLoggedIn) return true;
         return false;
-      } 
+      }
       else if (isLoggedIn && (nextUrl.pathname.startsWith('/login') || nextUrl.pathname.startsWith('/register'))) {
         return Response.redirect(new URL('/dashboard', nextUrl));
       }
