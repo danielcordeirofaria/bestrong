@@ -4,6 +4,7 @@ import { Plus, AlertTriangle } from 'lucide-react';
 import { auth } from '@/auth';
 import { sql } from '@vercel/postgres';
 import Image from 'next/image';
+import DeleteProductButton from '@/components/ui/delete-product-button';
 
 type ProductWithImage = {
   id: number;
@@ -17,7 +18,6 @@ type ProductWithImage = {
 export default async function ProductsPage() {
   const session = await auth();
   if (!session?.user?.id) {
-    // This should be handled by middleware, but as a safeguard:
     return <p className="p-8 text-center">Please log in to manage products.</p>;
   }
 
@@ -85,6 +85,9 @@ export default async function ProductsPage() {
                   <div className="mt-4 flex items-end justify-between">
                     <p className="text-lg font-bold text-text-main">${product.price}</p>
                     <p className="text-sm text-secondary">Qty: {product.quantity}</p>
+                  </div>
+                  <div className="mt-4 border-t pt-4">
+                    <DeleteProductButton productId={product.id} />
                   </div>
                 </div>
               </div>

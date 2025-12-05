@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { sql } from '@vercel/postgres';
-import { put } from '@vercel/blob';
+import { put, del } from '@vercel/blob';
 import bcrypt from 'bcrypt';
 import { redirect } from 'next/navigation';
 import { signIn, signOut, auth } from '@/auth';
@@ -212,4 +212,42 @@ export async function createProduct(prevState: State, formData: FormData): Promi
   console.log('[Server Action] Product created successfully. Revalidating path and redirecting...');
   revalidatePath('/dashboard/products');
   redirect('/dashboard/products');
+}
+
+export async function deleteProduct(productId: number) {
+  if (!productId) {
+    return { message: 'Invalid Product ID.' };
+  }
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { message: 'Authentication required.' };
+  }
+
+  try {
+    // Primeiro, busca as URLs das imagens associadas ao produto
+    const imagesData = await sql`
+      SELECT image_url FROM product_images WHERE product_id = ${productId}
+    `;
+
+    // Deleta o produto do banco de dados. O ON DELETE CASCADE cuidará dos registros em 'product_images'.
+    const deleteResult = await sql`
+      DELETE FROM products
+      WHERE id = ${productId} AND seller_id = ${session.user.id}
+    `;
+
+    if (deleteResult.rowCount === 0) {
+      return { message: 'Error: Product not found or you do not have permission to delete it.' };
+    }
+
+    if (imagesData.rows.length > 0) {
+      const urlsToDelete = imagesData.rows.map((row) => row.image_url);
+      await del(urlsToDelete);
+    }
+
+    revalidatePath('/dashboard/products');
+    return { message: 'Product deleted successfully.' };
+  } catch (error) {
+    return { message: 'Database Error: Failed to delete product.' };
+  }
 }
