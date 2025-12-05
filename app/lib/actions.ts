@@ -214,7 +214,7 @@ export async function createProduct(prevState: State, formData: FormData): Promi
   redirect('/dashboard/products');
 }
 
-export async function deleteProduct(productId: number, prevState: { message: string | null }, formData: FormData) {
+export async function deleteProduct(productId: number, prevState: { message: string | null }, formData: FormData): Promise<{ message: string | null }> {
   if (!productId) {
     return { message: 'Invalid Product ID.' };
   }
