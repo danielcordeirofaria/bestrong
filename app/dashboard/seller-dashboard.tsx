@@ -1,15 +1,22 @@
 import React from 'react';
-import { DollarSign, Package, Users } from 'lucide-react';
+import { DollarSign, Package } from 'lucide-react';
+import Link from 'next/link';
 import { Session } from 'next-auth';
+import { sql } from '@vercel/postgres';
 
 interface SellerDashboardProps {
   user: Session['user'];
 }
 
-export default function SellerDashboard({ user }: SellerDashboardProps) {
-  // No futuro, buscará dados reais do banco de dados aqui.
+export default async function SellerDashboard({ user }: SellerDashboardProps) {
   const totalSales = 1250.75;
-  const totalProducts = 15;
+
+  const productsCountData = await sql`
+    SELECT COUNT(*) 
+    FROM products 
+    WHERE seller_id = ${user.id}`;
+  
+  const totalProducts = productsCountData.rows[0].count;
 
   return (
     <main className="flex-1 bg-background p-4 sm:p-6 lg:p-8">
@@ -19,7 +26,7 @@ export default function SellerDashboard({ user }: SellerDashboardProps) {
             Seller Dashboard
           </h1>
           <p className="mt-2 text-sm text-secondary">
-            Welcome back, {user.name}! Here's your sales overview.
+            Welcome back, {user.name}! Here&apos;s your sales overview.
           </p>
         </div>
 
@@ -30,11 +37,13 @@ export default function SellerDashboard({ user }: SellerDashboardProps) {
             <h3 className="text-lg font-semibold text-text-main">Total Revenue</h3>
             <p className="text-2xl font-bold text-text-main">${totalSales.toLocaleString()}</p>
           </div>
-          <div className="rounded-lg border bg-card p-6 shadow-sm">
-            <Package className="mb-4 h-8 w-8 text-primary" />
-            <h3 className="text-lg font-semibold text-text-main">Active Products</h3>
-            <p className="text-2xl font-bold text-text-main">{totalProducts}</p>
-          </div>
+          <Link href="/dashboard/products" className="block rounded-lg border bg-card p-6 shadow-sm transition-shadow hover:shadow-md hover:border-primary/50">
+            <div>
+              <Package className="mb-4 h-8 w-8 text-primary" />
+              <h3 className="text-lg font-semibold text-text-main">Active Products</h3>
+              <p className="text-2xl font-bold text-text-main">{totalProducts}</p>
+            </div>
+          </Link>
         </div>
 
         {/* Lista de Produtos */}

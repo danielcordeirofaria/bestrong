@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { sql } from '@vercel/postgres';
-import { put } from '@vercel/blob';
+import { put, del } from '@vercel/blob';
 import bcrypt from 'bcrypt';
 import { redirect } from 'next/navigation';
 import { signIn, signOut, auth } from '@/auth';
@@ -65,7 +65,7 @@ export type State = {
   message?: string | null;
 };
 
-export async function createUser(prevState: State, formData: FormData) {
+export async function createUser(prevState: State, formData: FormData): Promise<State> {
   const validatedFields = FormSchema.safeParse({
     name: formData.get('name'),
     email: formData.get('email'),
@@ -212,4 +212,48 @@ export async function createProduct(prevState: State, formData: FormData): Promi
   console.log('[Server Action] Product created successfully. Revalidating path and redirecting...');
   revalidatePath('/dashboard/products');
   redirect('/dashboard/products');
+}
+
+export async function deleteProduct(productId: number, formData: FormData) {
+  if (!productId) {
+    return { message: 'Invalid Product ID.' };
+  }
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { message: 'Authentication required.' };
+  }
+
+  try {
+    await sql.query('BEGIN');
+
+    const imagesData = await sql`
+      SELECT pi.image_url
+      FROM product_images pi
+      JOIN products p ON pi.product_id = p.id
+      WHERE p.id = ${productId} AND p.seller_id = ${session.user.id}
+    `;
+
+    const deleteResult = await sql`
+      DELETE FROM products
+      WHERE id = ${productId} AND seller_id = ${session.user.id}
+    `;
+
+    if (deleteResult.rowCount === 0) {
+      await sql.query('ROLLBACK');
+      return { message: 'Error: Product not found or you do not have permission to delete it.' };
+    }
+
+    if (imagesData.rows.length > 0) {
+      const urlsToDelete = imagesData.rows.map((row) => row.image_url);
+      await del(urlsToDelete, { token: process.env.BESTRONGBLOB_READ_WRITE_TOKEN });
+    }
+
+    await sql.query('COMMIT');
+    revalidatePath('/dashboard/products');
+    return { message: 'Product deleted successfully.' };
+  } catch (error) {
+    await sql.query('ROLLBACK');
+    return { message: 'Database Error: Failed to delete product.' };
+  }
 }

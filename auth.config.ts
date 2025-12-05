@@ -20,9 +20,16 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
-      const isOnProfile = nextUrl.pathname.startsWith('/profile');
+      const isOnProductsPage = nextUrl.pathname.startsWith('/dashboard/products');
 
-      if (isOnDashboard || isOnProfile) {
+      if (isOnProductsPage) {
+        if (isLoggedIn && auth.user.role === 'seller') {
+          return true;
+        }
+        return false;
+      }
+
+      if (isOnDashboard) {
         if (isLoggedIn) return true;
         return false;
       }
