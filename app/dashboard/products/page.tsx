@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Plus, AlertTriangle } from 'lucide-react';
+import { Plus, AlertTriangle, Pencil } from 'lucide-react';
 import { auth } from '@/auth';
 import { sql } from '@vercel/postgres';
 import Image from 'next/image';
@@ -86,8 +86,15 @@ export default async function ProductsPage() {
                     <p className="text-lg font-bold text-text-main">${product.price}</p>
                     <p className="text-sm text-secondary">Qty: {product.quantity}</p>
                   </div>
-                  <div className="mt-4 border-t pt-4">
+                  <div className="mt-4 flex items-center justify-end space-x-2 border-t pt-4">
                     <DeleteProductButton productId={product.id} />
+                    <Link
+                      href={`/dashboard/products/${product.id}/edit`}
+                      className="flex items-center justify-center rounded-md bg-primary p-2 text-white transition-colors hover:bg-primary/90"
+                      aria-label="Edit product"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Link>
                   </div>
                 </div>
               </div>

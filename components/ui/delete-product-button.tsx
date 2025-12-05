@@ -2,7 +2,7 @@
 
 import { deleteProduct } from '@/app/lib/actions';
 import { Trash2, Loader2 } from 'lucide-react';
-import { useFormStatus } from 'react-dom';
+import { useFormState, useFormStatus } from 'react-dom';
 import React from 'react';
 
 function SubmitButton() {
@@ -24,10 +24,18 @@ interface DeleteProductButtonProps {
 }
 
 export default function DeleteProductButton({ productId }: DeleteProductButtonProps) {
+  const initialState = { message: null };
   const deleteProductWithId = deleteProduct.bind(null, productId);
+  const [state, dispatch] = useFormState(deleteProductWithId, initialState);
+
+  React.useEffect(() => {
+    if (state?.message) {
+      alert(state.message);
+    }
+  }, [state]);
 
   return (
-    <form action={deleteProductWithId}>
+    <form action={dispatch}>
       <SubmitButton />
     </form>
   );

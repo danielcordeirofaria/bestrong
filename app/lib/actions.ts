@@ -214,7 +214,7 @@ export async function createProduct(prevState: State, formData: FormData): Promi
   redirect('/dashboard/products');
 }
 
-export async function deleteProduct(productId: number, formData: FormData) {
+export async function deleteProduct(productId: number, prevState: { message: string | null }, formData: FormData): Promise<{ message: string | null }> {
   if (!productId) {
     return { message: 'Invalid Product ID.' };
   }
@@ -256,4 +256,41 @@ export async function deleteProduct(productId: number, formData: FormData) {
     await sql.query('ROLLBACK');
     return { message: 'Database Error: Failed to delete product.' };
   }
+}
+
+export async function updateProduct(id: string, prevState: State, formData: FormData): Promise<State> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { message: 'Authentication required.' };
+  }
+
+  const validatedFields = ProductSchema.omit({ image: true }).safeParse({
+    name: formData.get('name'),
+    description: formData.get('description'),
+    price: formData.get('price'),
+    quantity: formData.get('quantity'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update Product.',
+    };
+  }
+
+  const { name, description, price, quantity } = validatedFields.data;
+
+  try {
+    await sql`
+      UPDATE products
+      SET name = ${name}, description = ${description}, price = ${price}, quantity = ${quantity}
+      WHERE id = ${id} AND seller_id = ${session.user.id}
+    `;
+  } catch (error) {
+    return { message: 'Database Error: Failed to Update Product.' };
+  }
+
+  revalidatePath(`/dashboard/products`);
+  revalidatePath(`/dashboard/products/${id}/edit`);
+  redirect('/dashboard/products');
 }
