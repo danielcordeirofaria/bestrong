@@ -214,7 +214,7 @@ export async function createProduct(prevState: State, formData: FormData): Promi
   redirect('/dashboard/products');
 }
 
-export async function deleteProduct(productId: number) {
+export async function deleteProduct(productId: number, formData: FormData) {
   if (!productId) {
     return { message: 'Invalid Product ID.' };
   }
@@ -225,29 +225,35 @@ export async function deleteProduct(productId: number) {
   }
 
   try {
-    // Primeiro, busca as URLs das imagens associadas ao produto
+    await sql.query('BEGIN');
+
     const imagesData = await sql`
-      SELECT image_url FROM product_images WHERE product_id = ${productId}
+      SELECT pi.image_url
+      FROM product_images pi
+      JOIN products p ON pi.product_id = p.id
+      WHERE p.id = ${productId} AND p.seller_id = ${session.user.id}
     `;
 
-    // Deleta o produto do banco de dados. O ON DELETE CASCADE cuidará dos registros em 'product_images'.
     const deleteResult = await sql`
       DELETE FROM products
       WHERE id = ${productId} AND seller_id = ${session.user.id}
     `;
 
     if (deleteResult.rowCount === 0) {
+      await sql.query('ROLLBACK');
       return { message: 'Error: Product not found or you do not have permission to delete it.' };
     }
 
     if (imagesData.rows.length > 0) {
       const urlsToDelete = imagesData.rows.map((row) => row.image_url);
-      await del(urlsToDelete);
+      await del(urlsToDelete, { token: process.env.BESTRONGBLOB_READ_WRITE_TOKEN });
     }
 
+    await sql.query('COMMIT');
     revalidatePath('/dashboard/products');
     return { message: 'Product deleted successfully.' };
   } catch (error) {
+    await sql.query('ROLLBACK');
     return { message: 'Database Error: Failed to delete product.' };
   }
 }
