@@ -1,0 +1,31 @@
+.productGridSection {
+  @apply py-16;
+}
+
+.productGrid {
+  @apply grid grid-cols-1 gap-8 md:grid-cols-3;
+}
+
+.productCard {
+  @apply flex flex-col overflow-hidden rounded-lg border border-ui-border bg-white shadow-sm;
+}
+
+.productImage {
+  @apply h-72 w-full object-contain;
+}
+
+.productCardContent {
+  @apply flex flex-grow flex-col justify-between p-6;
+}
+
+.productName {
+  @apply font-serif text-xl font-semibold text-text-main;
+}
+
+.productPrice {
+    @apply text-lg font-semibold text-text-main;
+}
+
+.addToCartButton {
+  @apply rounded bg-primary px-6 py-2 text-sm font-semibold text-white transition-all hover:bg-opacity-90;
+}
