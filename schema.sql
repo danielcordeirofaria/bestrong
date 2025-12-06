@@ -1,5 +1,11 @@
 -- Create a user_role ENUM type for data integrity
-CREATE TYPE IF NOT EXISTS user_role AS ENUM ('buyer', 'seller');
+-- The DO $$...END $$ block allows conditional type creation in a way that is compatible with older PostgreSQL versions.
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
+        CREATE TYPE user_role AS ENUM ('buyer', 'seller');
+    END IF;
+END$$;
 
 -- 1. Users Table
 CREATE TABLE IF NOT EXISTS users (
