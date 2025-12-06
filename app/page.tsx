@@ -4,28 +4,7 @@ import { sql } from '@vercel/postgres';
 import Link from 'next/link';
 import styles from './homepage.module.css';
 
-<<<<<<< HEAD
-const products = [
-  {
-    id: 1,
-    name: 'Hand-Thrown Ceramic Mug',
-    price: 45,
-    img: 'https://placehold.co/400x400/F8F5F2/3E3E3E?text=Mug',
-  },
-  {
-    id: 2,
-    name: 'Woven Macrame Wall Hanging',
-    price: 45,
-    img: 'https://placehold.co/400x400/F8F5F2/3E3E3E?text=Macrame',
-  },
-  {
-    id: 3,
-    name: "Minimalist Wooden Desk Organizer",
-    price: 45,
-    img: 'https://placehold.co/400x400/F8F5F2/3E3E3E?text=Mug+2',
-  },
-];
-=======
+
 type Product = {
   id: number;
   name: string;
@@ -42,7 +21,6 @@ export default async function Page() {
     LIMIT 3;
   `;
   const products = productsData.rows;
->>>>>>> 67755ce17ea3534e0dca3f6f7020643b047deaba
 
   return (
     <div className="container mx-auto max-w-6xl px-4">
@@ -68,7 +46,7 @@ export default async function Page() {
           <div className={styles.productGrid}>
             {products.map((product) => (
               <div key={product.id} className={styles.productCard}>
-                <Image  
+                <Image
                   src={product.image_url || 'https://httpcats.com/404.jpg'}
                   alt={product.name}
                   width={400}
