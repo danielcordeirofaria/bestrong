@@ -357,3 +357,52 @@ export async function addToCart(productId: number, prevState: { message: string 
 
   return { message: 'Product added to cart!' };
 }
+
+export async function updateCartItemQuantity(itemId: number, newQuantity: number) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: 'Authentication required.' };
+  }
+
+  if (newQuantity < 1) {
+    // If quantity is less than 1, remove the item instead.
+    return removeCartItem(itemId);
+  }
+
+  try {
+    await sql`
+      UPDATE order_items
+      SET quantity = ${newQuantity}
+      WHERE id = ${itemId}
+        AND order_id = (SELECT id FROM orders WHERE client_id = ${session.user.id} AND status = 'pending');
+    `;
+    revalidatePath('/cart');
+    return { success: true };
+  } catch (error) {
+    return { error: 'Database Error: Failed to update quantity.' };
+  }
+}
+
+export async function removeCartItem(itemId: number) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: 'Authentication required.' };
+  }
+
+  try {
+    const result = await sql`
+      DELETE FROM order_items
+      WHERE id = ${itemId}
+        AND order_id = (SELECT id FROM orders WHERE client_id = ${session.user.id} AND status = 'pending');
+    `;
+
+    if (result.rowCount === 0) {
+      return { error: 'Item not found in your cart.' };
+    }
+
+    revalidatePath('/cart');
+    return { success: true, message: 'Item removed from cart.' };
+  } catch (error) {
+    return { error: 'Database Error: Failed to remove item.' };
+  }
+}
