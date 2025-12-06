@@ -179,6 +179,7 @@ export async function createProduct(prevState: State, formData: FormData): Promi
     console.log('[Server Action] Uploading image to Vercel Blob...');
     const blob = await put(image.name, image, {
       access: 'public',
+      addRandomSuffix: true,
       token: process.env.BESTRONGBLOB_READ_WRITE_TOKEN,
     });
     console.log('[Server Action] Image uploaded. URL:', blob.url);
@@ -246,7 +247,7 @@ export async function deleteProduct(productId: number, prevState: { message: str
 
     if (imagesData.rows.length > 0) {
       const urlsToDelete = imagesData.rows.map((row) => row.image_url);
-      await del(urlsToDelete, { token: process.env.BESTRONGBLOB_READ_WRITE_TOKEN });
+      await del(urlsToDelete, { token: process.env.BESTRONGBLOB_READ_WRITE_TOKEN, });
     }
 
     await sql.query('COMMIT');
