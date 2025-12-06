@@ -10,15 +10,17 @@ type ProductDetails = {
   description: string | null;
   price: string;
   quantity: number;
+  seller_name: string;
   images: { image_url: string }[];
 };
 
 async function getProductDetails(id: string): Promise<ProductDetails | undefined> {
   try {
     const productData = await sql`
-      SELECT id, name, description, price, quantity
-      FROM products
-      WHERE id = ${id} AND quantity > 0;
+      SELECT p.id, p.name, p.description, p.price, p.quantity, u.name as seller_name
+      FROM products p
+      JOIN users u ON p.seller_id = u.id
+      WHERE p.id = ${id} AND p.quantity > 0;
     `;
 
     if (productData.rows.length === 0) {
@@ -40,6 +42,7 @@ async function getProductDetails(id: string): Promise<ProductDetails | undefined
       description: product.description,
       price: product.price,
       quantity: product.quantity,
+      seller_name: product.seller_name,
       images: imageData.rows,
     };
   } catch (error) {
@@ -65,6 +68,9 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
         </div>
         <div className="flex flex-col">
           <h1 className="font-serif text-3xl font-bold text-text-main">{product.name}</h1>
+          <p className="mt-2 text-sm text-secondary">
+            Sold by <span className="font-medium text-primary">{product.seller_name}</span>
+          </p>
           <p className="mt-4 text-2xl font-semibold text-text-main">${product.price}</p>
           <p className="mt-4 flex-grow text-secondary">{product.description}</p>
           <AddToCartButton productId={product.id} />
