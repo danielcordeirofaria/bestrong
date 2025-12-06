@@ -295,3 +295,65 @@ export async function updateProduct(id: string, prevState: State, formData: Form
   revalidatePath(`/dashboard/products/${id}/edit`);
   redirect('/dashboard/products');
 }
+
+export async function addToCart(productId: number, prevState: { message: string | null } | null, formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    // Em um app real, você poderia redirecionar para o login
+    // ou retornar um erro. Por enquanto, vamos apenas retornar.
+    return { message: 'Please log in to add items to your cart.' };
+  }
+  const userId = session.user.id;
+
+  try {
+    await sql.query('BEGIN');
+
+    // 1. Encontrar ou criar um pedido "pending" para o usuário
+    let orderResult = await sql`
+      SELECT id FROM orders WHERE client_id = ${userId} AND status = 'pending'
+    `;
+    let orderId;
+
+    if (orderResult.rows.length > 0) {
+      orderId = orderResult.rows[0].id;
+    } else {
+      const newOrderResult = await sql`
+        INSERT INTO orders (client_id, status) VALUES (${userId}, 'pending') RETURNING id
+      `;
+      orderId = newOrderResult.rows[0].id;
+    }
+
+    // 2. Verificar se o item já está no carrinho para incrementar a quantidade
+    const existingItem = await sql`
+      SELECT id, quantity FROM order_items WHERE order_id = ${orderId} AND product_id = ${productId}
+    `;
+
+    if (existingItem.rows.length > 0) {
+      const newQuantity = existingItem.rows[0].quantity + 1;
+      await sql`
+        UPDATE order_items SET quantity = ${newQuantity} WHERE id = ${existingItem.rows[0].id}
+      `;
+    } else {
+      // 3. Adicionar o novo item ao carrinho
+      const product = await sql`SELECT price FROM products WHERE id = ${productId}`;
+      if (product.rows.length === 0) throw new Error('Product not found.');
+      
+      await sql`
+        INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase)
+        VALUES (${orderId}, ${productId}, 1, ${product.rows[0].price})
+      `;
+    }
+
+    await sql.query('COMMIT');
+  } catch (error) {
+    await sql.query('ROLLBACK');
+    return { message: `Database Error: Failed to add item to cart. ${(error as Error).message}` };
+  }
+
+  // 4. Revalidar o cache para que o ícone do carrinho no Header seja atualizado.
+  revalidatePath('/');
+  revalidatePath('/products');
+  revalidatePath('/products/[id]', 'layout'); // Revalida a página de detalhes do produto
+
+  return { message: 'Product added to cart!' };
+}

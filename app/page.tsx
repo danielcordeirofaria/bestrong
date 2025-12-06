@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { sql } from '@vercel/postgres';
 import Link from 'next/link';
 import styles from './homepage.module.css';
+import AddToCartButton from '@/components/ui/add-to-cart-button';
 
 
 type Product = {
@@ -59,7 +60,7 @@ export default async function Page() {
                   </div>
                   <div className="mt-4 flex items-center justify-between">
                     <span className={styles.productPrice}>${product.price} USD</span>
-                    <button className={styles.addToCartButton}>Add to Cart</button>
+                    <AddToCartButton productId={product.id} />
                   </div>
                 </div>
               </div>

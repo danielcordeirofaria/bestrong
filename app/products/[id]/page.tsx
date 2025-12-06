@@ -2,6 +2,7 @@ import { sql } from '@vercel/postgres';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import React from 'react';
+import AddToCartButton from '@/components/ui/add-to-cart-button';
 
 type ProductDetails = {
   id: number;
@@ -66,9 +67,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
           <h1 className="font-serif text-3xl font-bold text-text-main">{product.name}</h1>
           <p className="mt-4 text-2xl font-semibold text-text-main">${product.price}</p>
           <p className="mt-4 flex-grow text-secondary">{product.description}</p>
-          <button className="mt-8 w-full rounded bg-primary py-3 text-lg font-semibold text-white transition-all hover:bg-opacity-90">
-            Add to Cart
-          </button>
+          <AddToCartButton productId={product.id} />
         </div>
       </div>
     </main>
