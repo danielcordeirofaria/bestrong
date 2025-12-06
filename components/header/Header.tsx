@@ -2,7 +2,7 @@ import Image from 'next/image';
 import styles from './header.module.css';
 import Link from 'next/link';
 import React from 'react';
-import { ShoppingCart, User, LayoutDashboard } from 'lucide-react';
+import { ShoppingCart, User, LayoutDashboard, Store } from 'lucide-react';
 import { auth } from '@/auth';
 import LogoutButton from '@/components/ui/logout-button';
 import { sql } from '@vercel/postgres';
@@ -67,11 +67,20 @@ const Header = async () => {
             <Link href="/">Handcrafted Haven</Link>
           </h1>
           <div className="flex items-center gap-5">
-            <Link href="/dashboard" aria-label="Dashboard" className={styles.link} >
-              <p className={styles.p}>Dashboard</p>
-              <LayoutDashboard className="h-6 w-6 text-text-main" />
-            </Link>
-            <CartIcon />
+            {session?.user?.role === 'seller' && (
+              <Link href="/dashboard" aria-label="Dashboard" className={styles.link}>
+                <p className={styles.p}>Dashboard</p>
+                <LayoutDashboard className="h-6 w-6 text-text-main" />
+              </Link>
+            )}
+            {session?.user?.role === 'buyer' && (
+              <Link href="/products" aria-label="Products" className={styles.link}>
+                <p className={styles.p}>Products</p>
+                <Store className="h-6 w-6 text-text-main" />
+              </Link>
+            )}
+            {session?.user?.role !== 'seller' && <CartIcon />}
+
             {session?.user ? (
               <>
 
