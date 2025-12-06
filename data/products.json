@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "title": "Hand-Thrown Ceramic Mug",
+    "price": 45.0,
+    "image": "/public/ceramic-mug.png"
+  },
+  {
+    "id": 2,
+    "title": "Woven Macrame Wall Hanging",
+    "price": 45.0,
+    "image": "/public/macrame-wall-hanging.png"
+  },
+  {
+    "id": 3,
+    "title": "Minimalist Wooden Desk Organizer",
+    "price": 45.0,
+    "image": "/public/desk-organizer.png"
+  }
+]

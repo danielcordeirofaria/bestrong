@@ -16,7 +16,7 @@ const products = [
   },
   {
     id: 3,
-    name: 'Woven Macrame Wall Hanging',
+    name: "Minimalist Wooden Desk Organizer",
     price: 45,
     img: 'https://placehold.co/400x400/F8F5F2/3E3E3E?text=Mug+2',
   },
