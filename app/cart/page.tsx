@@ -84,9 +84,9 @@ export default async function CartPage() {
               <p>Subtotal</p>
               <p>${subtotal.toFixed(2)}</p>
             </div>
-            <button className="mt-6 w-full rounded-md bg-primary py-2 font-semibold text-white shadow-sm hover:bg-primary/90">
+            <Link href="/cart/checkout" className="mt-6 block w-full rounded-md bg-primary py-2 text-center font-semibold text-white shadow-sm hover:bg-primary/90">
               Proceed to Checkout
-            </button>
+            </Link>
           </div>
         </div>
       )}

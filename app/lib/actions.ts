@@ -406,3 +406,62 @@ export async function removeCartItem(itemId: number) {
     return { error: 'Database Error: Failed to remove item.' };
   }
 }
+
+export async function placeOrder(orderId: number) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { message: 'Authentication required.' };
+  }
+
+  try {
+    await sql.query('BEGIN');
+
+    const { rows: items } = await sql`
+      SELECT product_id, quantity FROM order_items WHERE order_id = ${orderId}
+    `;
+
+    if (items.length === 0) {
+      throw new Error('Cart is empty.');
+    }
+
+    for (const item of items) {
+      const updateResult = await sql`
+        UPDATE products
+        SET quantity = quantity - ${item.quantity}
+        WHERE id = ${item.product_id}
+          AND quantity >= ${item.quantity}
+      `;
+
+      if (updateResult.rowCount === 0) {
+        const productInfo = await sql`SELECT name FROM products WHERE id = ${item.product_id}`;
+        const productName = productInfo.rows[0]?.name || 'a product';
+        throw new Error(`Sorry, there is not enough stock for "${productName}".`);
+      }
+    }
+
+    const { rows: totalData } = await sql`
+      SELECT SUM(price_at_purchase * quantity) as total
+      FROM order_items
+      WHERE order_id = ${orderId}
+    `;
+    const totalAmount = totalData[0].total;
+
+    await sql`
+      UPDATE orders
+      SET status = 'paid', total_amount = ${totalAmount}
+      WHERE id = ${orderId} AND client_id = ${session.user.id}
+    `;
+
+    await sql.query('COMMIT');
+  } catch (error) {
+    await sql.query('ROLLBACK');
+    const errorMessage = (error instanceof Error) ? error.message : 'An unknown error occurred.';
+    const encodedMessage = encodeURIComponent(errorMessage);
+    redirect(`/checkout?error=${encodedMessage}`);
+  }
+
+  revalidatePath('/');
+  revalidatePath('/cart');
+  revalidatePath('/products', 'layout');
+  redirect(`/order/success/${orderId}`);
+}
