@@ -15,7 +15,7 @@ export default async function ProductsPage() {
     SELECT p.id, p.name, p.price, pi.image_url
     FROM products p
     LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = true
-    WHERE p.quantity > 0 -- Only show products that are in stock
+    WHERE p.quantity > 0 AND p.isActive = true -- Only show products that are in stock and active
     ORDER BY p.id DESC;
   `;
 
