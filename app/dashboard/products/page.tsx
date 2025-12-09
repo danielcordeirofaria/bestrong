@@ -31,7 +31,7 @@ export default async function ProductsPage() {
         pi.image_url
     FROM products AS p
     LEFT JOIN product_images AS pi ON p.id = pi.product_id AND pi.is_primary = true
-    WHERE p.seller_id = ${session.user.id}
+    WHERE p.seller_id = ${session.user.id} AND p.isActive = true
     ORDER BY p.id DESC;
   `;
   const products = productsData.rows;
