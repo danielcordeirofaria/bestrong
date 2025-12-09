@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { sql } from '@vercel/postgres';
-import { put, del } from '@vercel/blob';
+import { put } from '@vercel/blob';
 import bcrypt from 'bcrypt';
 import { redirect } from 'next/navigation';
 import { signIn, signOut, auth } from '@/auth';
@@ -348,7 +348,7 @@ export async function addToCart(productId: number, prevState: { message: string 
 
       await sql`
         INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase)
-        VALUES (${orderId}, ${productId}, 1, ${product.rows[0].price})
+        VALUES (${orderId}, ${productId}, 1, ${product.price})
       `;
     }
 

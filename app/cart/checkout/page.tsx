@@ -43,7 +43,7 @@ export default async function CheckoutPage() {
         </div>
 
         <p className="text-secondary mb-8 text-sm">
-          Clicking "Place Order" will finalize your purchase and reduce the stock of the items.
+          Clicking &quot;Place Order&quot; will finalize your purchase.
         </p>
 
         <form action={placeOrder.bind(null, orderId)}>
