@@ -1,5 +1,3 @@
--- Create a user_role ENUM type for data integrity
--- The DO $$...END $$ block allows conditional type creation in a way that is compatible with older PostgreSQL versions.
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
@@ -35,7 +33,8 @@ CREATE TABLE IF NOT EXISTS products (
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
-    quantity INT NOT NULL CHECK (quantity >= 0)
+    quantity INT NOT NULL CHECK (quantity >= 0),
+    isActive BOOLEAN DEFAULT TRUE
 );
 
 -- 4. Product Images Table

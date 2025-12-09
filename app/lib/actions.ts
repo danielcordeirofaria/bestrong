@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { sql } from '@vercel/postgres';
-import { put, del } from '@vercel/blob';
+import { put } from '@vercel/blob';
 import bcrypt from 'bcrypt';
 import { redirect } from 'next/navigation';
 import { signIn, signOut, auth } from '@/auth';
@@ -188,8 +188,8 @@ export async function createProduct(prevState: State, formData: FormData): Promi
     console.log('[Server Action] Database transaction started.');
 
     const productResult = await sql`
-      INSERT INTO products (seller_id, name, description, price, quantity)
-      VALUES (${sellerId}, ${name}, ${description}, ${price}, ${quantity})
+      INSERT INTO products (seller_id, name, description, price, quantity, isActive)
+      VALUES (${sellerId}, ${name}, ${description}, ${price}, ${quantity}, TRUE)
       RETURNING id
     `;
     const productId = productResult.rows[0].id;
@@ -228,30 +228,21 @@ export async function deleteProduct(productId: number, prevState: { message: str
   try {
     await sql.query('BEGIN');
 
-    const imagesData = await sql`
-      SELECT pi.image_url
-      FROM product_images pi
-      JOIN products p ON pi.product_id = p.id
-      WHERE p.id = ${productId} AND p.seller_id = ${session.user.id}
-    `;
-
-    const deleteResult = await sql`
-      DELETE FROM products
+    const updateResult = await sql`
+      UPDATE products 
+      SET isActive = false
       WHERE id = ${productId} AND seller_id = ${session.user.id}
     `;
 
-    if (deleteResult.rowCount === 0) {
+    if (updateResult.rowCount === 0) {
       await sql.query('ROLLBACK');
       return { message: 'Error: Product not found or you do not have permission to delete it.' };
     }
 
-    if (imagesData.rows.length > 0) {
-      const urlsToDelete = imagesData.rows.map((row) => row.image_url);
-      await del(urlsToDelete, { token: process.env.BESTRONGBLOB_READ_WRITE_TOKEN, });
-    }
-
     await sql.query('COMMIT');
     revalidatePath('/dashboard/products');
+    revalidatePath('/');
+    revalidatePath('/products');
     return { message: 'Product deleted successfully.' };
   } catch (error) {
     await sql.query('ROLLBACK');
@@ -293,14 +284,16 @@ export async function updateProduct(id: string, prevState: State, formData: Form
 
   revalidatePath(`/dashboard/products`);
   revalidatePath(`/dashboard/products/${id}/edit`);
+  revalidatePath('/products');
+  revalidatePath(`/products/${id}`);
+  revalidatePath('/', 'layout');
   redirect('/dashboard/products');
 }
 
 export async function addToCart(productId: number, prevState: { message: string | null } | null, formData: FormData) {
   const session = await auth();
   if (!session?.user?.id) {
-    // Em um app real, você poderia redirecionar para o login
-    // ou retornar um erro. Por enquanto, vamos apenas retornar.
+
     return { message: 'Please log in to add items to your cart.' };
   }
   const userId = session.user.id;
@@ -308,7 +301,6 @@ export async function addToCart(productId: number, prevState: { message: string 
   try {
     await sql.query('BEGIN');
 
-    // 1. Encontrar ou criar um pedido "pending" para o usuário
     let orderResult = await sql`
       SELECT id FROM orders WHERE client_id = ${userId} AND status = 'pending'
     `;
@@ -323,7 +315,6 @@ export async function addToCart(productId: number, prevState: { message: string 
       orderId = newOrderResult.rows[0].id;
     }
 
-    // 2. Verificar se o item já está no carrinho para incrementar a quantidade
     const existingItem = await sql`
       SELECT id, quantity FROM order_items WHERE order_id = ${orderId} AND product_id = ${productId}
     `;
@@ -334,13 +325,25 @@ export async function addToCart(productId: number, prevState: { message: string 
         UPDATE order_items SET quantity = ${newQuantity} WHERE id = ${existingItem.rows[0].id}
       `;
     } else {
-      // 3. Adicionar o novo item ao carrinho
-      const product = await sql`SELECT price FROM products WHERE id = ${productId}`;
-      if (product.rows.length === 0) throw new Error('Product not found.');
-      
+      const productResult = await sql`
+        SELECT name, price, quantity, isActive FROM products WHERE id = ${productId}
+      `;
+
+      if (productResult.rows.length === 0) {
+        throw new Error('Product not found.');
+      }
+
+      const product = productResult.rows[0];
+
+      if (!product.isactive) {
+        throw new Error(`Product "${product.name}" is no longer available.`);
+      }
+
+      if (product.quantity < 1) throw new Error(`Product "${product.name}" is out of stock.`);
+
       await sql`
         INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase)
-        VALUES (${orderId}, ${productId}, 1, ${product.rows[0].price})
+        VALUES (${orderId}, ${productId}, 1, ${product.price})
       `;
     }
 
@@ -350,10 +353,9 @@ export async function addToCart(productId: number, prevState: { message: string 
     return { message: `Database Error: Failed to add item to cart. ${(error as Error).message}` };
   }
 
-  // 4. Revalidar o cache para que o ícone do carrinho no Header seja atualizado.
   revalidatePath('/');
   revalidatePath('/products');
-  revalidatePath('/products/[id]', 'layout'); // Revalida a página de detalhes do produto
+  revalidatePath('/products/[id]', 'layout');
 
   return { message: 'Product added to cart!' };
 }
@@ -365,7 +367,6 @@ export async function updateCartItemQuantity(itemId: number, newQuantity: number
   }
 
   if (newQuantity < 1) {
-    // If quantity is less than 1, remove the item instead.
     return removeCartItem(itemId);
   }
 
@@ -410,7 +411,8 @@ export async function removeCartItem(itemId: number) {
 export async function placeOrder(orderId: number) {
   const session = await auth();
   if (!session?.user?.id) {
-    return { message: 'Authentication required.' };
+    // return { message: 'Authentication required.' };
+    redirect('/login');
   }
 
   try {
@@ -429,13 +431,19 @@ export async function placeOrder(orderId: number) {
         UPDATE products
         SET quantity = quantity - ${item.quantity}
         WHERE id = ${item.product_id}
-          AND quantity >= ${item.quantity}
+          AND quantity >= ${item.quantity} 
+          AND isActive = true
       `;
 
       if (updateResult.rowCount === 0) {
-        const productInfo = await sql`SELECT name FROM products WHERE id = ${item.product_id}`;
-        const productName = productInfo.rows[0]?.name || 'a product';
-        throw new Error(`Sorry, there is not enough stock for "${productName}".`);
+        const productInfo = await sql`
+          SELECT name, quantity, isActive FROM products WHERE id = ${item.product_id}
+        `;
+        const product = productInfo.rows[0];
+        if (!product.isactive) {
+          throw new Error(`Product "${product.name}" is no longer available and has been removed from your cart.`);
+        }
+        throw new Error(`Sorry, there is not enough stock for "${product.name}". Only ${product.quantity} left.`);
       }
     }
 
