@@ -226,7 +226,7 @@ export async function deleteProduct(productId: number, prevState: { message: str
   }
 
   try {
-     await sql.query('BEGIN');
+    await sql.query('BEGIN');
 
     // Soft delete: Update isActive to false instead of deleting the record
     const updateResult = await sql`
@@ -418,7 +418,8 @@ export async function removeCartItem(itemId: number) {
 export async function placeOrder(orderId: number) {
   const session = await auth();
   if (!session?.user?.id) {
-    return { message: 'Authentication required.' };
+    // return { message: 'Authentication required.' };
+    redirect('/login');
   }
 
   try {
