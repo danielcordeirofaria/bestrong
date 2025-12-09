@@ -43,7 +43,7 @@ async function getProductDetails(id: string): Promise<ProductDetails | undefined
       price: product.price,
       quantity: product.quantity,
       seller_name: product.seller_name,
-      images: imageData.rows,
+      images: imageData.rows as { image_url: string }[],
     };
   } catch (error) {
     console.error('Database Error fetching product details:', error);

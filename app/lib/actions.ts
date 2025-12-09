@@ -228,7 +228,6 @@ export async function deleteProduct(productId: number, prevState: { message: str
   try {
     await sql.query('BEGIN');
 
-    // Soft delete: Update isActive to false instead of deleting the record
     const updateResult = await sql`
       UPDATE products 
       SET isActive = false
@@ -240,7 +239,6 @@ export async function deleteProduct(productId: number, prevState: { message: str
       return { message: 'Error: Product not found or you do not have permission to delete it.' };
     }
 
-    // NOTE: We do NOT delete images from blob storage to preserve history for orders.
     await sql.query('COMMIT');
     revalidatePath('/dashboard/products');
     revalidatePath('/');
@@ -303,7 +301,6 @@ export async function addToCart(productId: number, prevState: { message: string 
   try {
     await sql.query('BEGIN');
 
-    // 1. Encontrar ou criar um pedido "pending" para o usuário
     let orderResult = await sql`
       SELECT id FROM orders WHERE client_id = ${userId} AND status = 'pending'
     `;
@@ -318,7 +315,6 @@ export async function addToCart(productId: number, prevState: { message: string 
       orderId = newOrderResult.rows[0].id;
     }
 
-    // 2. Verificar se o item já está no carrinho para incrementar a quantidade
     const existingItem = await sql`
       SELECT id, quantity FROM order_items WHERE order_id = ${orderId} AND product_id = ${productId}
     `;
@@ -329,7 +325,6 @@ export async function addToCart(productId: number, prevState: { message: string 
         UPDATE order_items SET quantity = ${newQuantity} WHERE id = ${existingItem.rows[0].id}
       `;
     } else {
-      // 3. Adicionar o novo item ao carrinho
       const productResult = await sql`
         SELECT name, price, quantity, isActive FROM products WHERE id = ${productId}
       `;
@@ -358,10 +353,9 @@ export async function addToCart(productId: number, prevState: { message: string 
     return { message: `Database Error: Failed to add item to cart. ${(error as Error).message}` };
   }
 
-  // 4. Revalidar o cache para que o ícone do carrinho no Header seja atualizado.
   revalidatePath('/');
   revalidatePath('/products');
-  revalidatePath('/products/[id]', 'layout'); // Revalida a página de detalhes do produto
+  revalidatePath('/products/[id]', 'layout');
 
   return { message: 'Product added to cart!' };
 }
@@ -373,7 +367,6 @@ export async function updateCartItemQuantity(itemId: number, newQuantity: number
   }
 
   if (newQuantity < 1) {
-    // If quantity is less than 1, remove the item instead.
     return removeCartItem(itemId);
   }
 
@@ -442,7 +435,6 @@ export async function placeOrder(orderId: number) {
           AND isActive = true
       `;
 
-      // Se nenhuma linha foi atualizada, significa que o produto está inativo ou sem estoque.
       if (updateResult.rowCount === 0) {
         const productInfo = await sql`
           SELECT name, quantity, isActive FROM products WHERE id = ${item.product_id}
