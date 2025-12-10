@@ -31,6 +31,7 @@ const FormSchema = z.object({
       'Only .jpg, .png, and .webp formats are supported.'
     )
     .optional(),
+  bio: z.string().max(500, { message: 'Bio must be 500 characters or less.' }).optional(),
 });
 
 const ProductSchema = z.object({
