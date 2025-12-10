@@ -94,7 +94,6 @@ export default async function ProductDetailPage({
       u.name AS reviewer_name
     FROM product_reviews r
     JOIN users u ON r.user_id = u.id
-    WHERE r.product_id = ${product.id}
     ORDER BY r.created_at DESC;
   `;
 
@@ -133,14 +132,10 @@ export default async function ProductDetailPage({
     }
 
     try {
+      console.log('Inserting review:', { productId: product.id, userId, ratingValue, comment });
       await sql`
         INSERT INTO product_reviews (product_id, user_id, rating, comment)
         VALUES (${product.id}, ${userId}, ${ratingValue}, ${comment})
-        ON CONFLICT (product_id, user_id)
-        DO UPDATE SET
-          rating = EXCLUDED.rating,
-          comment = EXCLUDED.comment,
-          updated_at = NOW();
       `;
       revalidatePath(`/products/${product.id}`);
     } catch (error) {
@@ -175,7 +170,7 @@ export default async function ProductDetailPage({
           </p>
           <p className="mt-4 flex-grow text-secondary">
             {product.description}
-            Sold by <Link href={`/sellers/${product.seller_id}`} className="font-medium text-primary hover:underline">{product.seller_name}</Link>
+            Sold by <Link href={`/ sellers / ${product.seller_id} `} className="font-medium text-primary hover:underline">{product.seller_name}</Link>
           </p>
           <AddToCartButton productId={product.id} />
         </div>

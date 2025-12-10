@@ -74,7 +74,5 @@ CREATE TABLE IF NOT EXISTS product_reviews (
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
     comment TEXT,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT product_reviews_unique_review UNIQUE (product_id, user_id)
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
