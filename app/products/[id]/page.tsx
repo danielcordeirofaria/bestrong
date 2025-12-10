@@ -5,6 +5,7 @@ import Link from 'next/link';
 import AddToCartButton from '@/components/ui/add-to-cart-button';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
+import React from 'react';
 
 type ProductDetails = {
   id: number;
@@ -159,12 +160,6 @@ export default async function ProductDetailPage({
           <h1 className="font-serif text-3xl font-bold text-text-main">
             {product.name}
           </h1>
-          <p className="mt-2 text-sm text-secondary">
-            Sold by{' '}
-            <span className="font-medium text-primary">
-              {product.seller_name}
-            </span>
-          </p>
           <p className="mt-4 text-2xl font-semibold text-text-main">
             ${product.price}
           </p>
