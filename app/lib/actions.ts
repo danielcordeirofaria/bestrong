@@ -217,7 +217,7 @@ export async function createProduct(prevState: State, formData: FormData): Promi
 
   try {
     console.log('[Server Action] Uploading image to Vercel Blob...');
-    console.log('[Server Action] Token Check:', process.env.BESTRONGBLOB_READ_WRITE_TOKEN ? 'Token exists (starts with ' + process.env.BESTRONGBLOB_READ_WRITE_TOKEN.substring(0, 5) + '...)' : 'Token is MISSING');
+    console.log('[Server Action] Token Check:', process.env.bestrongblob_READ_WRITE_TOKEN ? 'Token exists (starts with ' + process.env.bestrongblob_READ_WRITE_TOKEN.substring(0, 5) + '...)' : 'Token is MISSING');
     const blob = await put(image.name, image, {
       access: 'public',
       addRandomSuffix: true,
