@@ -11,11 +11,21 @@ const merriweather = Merriweather({
   variable: '--font-merriweather',
 });
 
+import type { Metadata } from 'next';
+
 const lato = Lato({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-lato',
 });
+
+export const metadata: Metadata = {
+  title: {
+    template: '%s | Handcrafted Haven',
+    default: 'Handcrafted Haven',
+  },
+  description: 'The best place to buy and sell handcrafted goods.',
+};
 
 export default function RootLayout({
   children,
