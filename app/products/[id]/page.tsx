@@ -159,18 +159,11 @@ export default async function ProductDetailPage({
           <h1 className="font-serif text-3xl font-bold text-text-main">
             {product.name}
           </h1>
-          <p className="mt-2 text-sm text-secondary">
-            Sold by{' '}
-            <span className="font-medium text-primary">
-              {product.seller_name}
-            </span>
-          </p>
           <p className="mt-4 text-2xl font-semibold text-text-main">
             ${product.price}
           </p>
           <p className="mt-4 flex-grow text-secondary">
-            {product.description}
-            Sold by <Link href={`/ sellers / ${product.seller_id} `} className="font-medium text-primary hover:underline">{product.seller_name}</Link>
+            {product.description} Sold by <Link href={`/ sellers / ${product.seller_id} `} className="font-medium text-primary hover:underline">{product.seller_name}</Link>
           </p>
           <AddToCartButton productId={product.id} />
         </div>
