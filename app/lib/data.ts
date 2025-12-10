@@ -131,3 +131,22 @@ export async function fetchSellerProfile(sellerId: string) {
     throw new Error('Failed to fetch seller profile.');
   }
 }
+
+export async function fetchSellerTotalRevenue(sellerId: string) {
+  noStore();
+  try {
+    const data = await sql`
+      SELECT SUM(oi.price_at_purchase * oi.quantity) as total_revenue
+      FROM order_items oi
+      JOIN products p ON oi.product_id = p.id
+      JOIN orders o ON oi.order_id = o.id
+      WHERE p.seller_id = ${sellerId}
+    `;
+
+    // Handle case where there are no sales (returns null)
+    return Number(data.rows[0].total_revenue) || 0;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total revenue.');
+  }
+}

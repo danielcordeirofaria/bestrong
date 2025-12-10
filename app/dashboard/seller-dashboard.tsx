@@ -4,18 +4,20 @@ import Link from 'next/link';
 import { Session } from 'next-auth';
 import { sql } from '@vercel/postgres';
 
+import { fetchSellerTotalRevenue } from '@/app/lib/data';
+
 interface SellerDashboardProps {
   user: Session['user'];
 }
 
 export default async function SellerDashboard({ user }: SellerDashboardProps) {
-  const totalSales = 1250.75;
+  const totalSales = await fetchSellerTotalRevenue(user?.id || '');
 
   const productsCountData = await sql`
     SELECT COUNT(*) 
     FROM products 
     WHERE seller_id = ${user.id}`;
-  
+
   const totalProducts = productsCountData.rows[0].count;
 
   return (
