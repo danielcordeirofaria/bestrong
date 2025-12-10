@@ -66,3 +66,14 @@ CREATE TABLE IF NOT EXISTS order_items (
     quantity INT NOT NULL CHECK (quantity > 0),
     price_at_purchase DECIMAL(10, 2) NOT NULL
 );
+
+-- 7. Product Reviews Table
+CREATE TABLE IF NOT EXISTS product_reviews (
+    id SERIAL PRIMARY KEY,
+    product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
