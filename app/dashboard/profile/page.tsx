@@ -6,12 +6,13 @@ export default async function ProfilePage() {
     const session = await auth();
     if (!session?.user?.id) return null;
 
-    const user = await sql`SELECT bio FROM users WHERE id = ${session.user.id}`;
+    const user = await sql`SELECT bio, profile_image FROM users WHERE id = ${session.user.id}`;
     const bio = user.rows[0]?.bio || '';
+    const profileImage = user.rows[0]?.profile_image || null;
 
     return (
         <div className="w-full">
-            <ProfileForm initialBio={bio} />
+            <ProfileForm initialBio={bio} initialImage={profileImage} />
         </div>
     );
 }

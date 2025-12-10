@@ -23,6 +23,14 @@ const FormSchema = z.object({
   state: z.string().min(1, { message: 'State is required.' }),
   zip_code: z.string().min(1, { message: 'ZIP Code is required.' }),
   country: z.string().min(1, { message: 'Country is required.' }),
+  image: z
+    .instanceof(File)
+    .refine((file) => file.size <= 5 * 1024 * 1024, `Max image size is 5MB.`)
+    .refine(
+      (file) => ['image/jpeg', 'image/png', 'image/webp'].includes(file.type),
+      'Only .jpg, .png, and .webp formats are supported.'
+    )
+    .optional(),
 });
 
 const ProductSchema = z.object({
@@ -82,6 +90,8 @@ export async function createUser(prevState: State, formData: FormData): Promise<
     state: formData.get('state'),
     zip_code: formData.get('zip_code'),
     country: formData.get('country'),
+    image: formData.get('image') || undefined,
+    bio: formData.get('bio'),
   });
 
   if (!validatedFields.success) {
@@ -91,7 +101,7 @@ export async function createUser(prevState: State, formData: FormData): Promise<
     };
   }
 
-  const { name, email, password, phone_number, role, street, city, state, zip_code, country } = validatedFields.data;
+  const { name, email, password, phone_number, role, street, city, state, zip_code, country, image, bio } = validatedFields.data;
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -101,15 +111,38 @@ export async function createUser(prevState: State, formData: FormData): Promise<
     await sql.query('BEGIN');
 
     const userResult = await sql`
-      INSERT INTO users (name, email, password, phone_number, role)
-      VALUES (${name}, ${email}, ${hashedPassword}, ${finalPhoneNumber}, ${role})
+      INSERT INTO users (name, email, password, phone_number, role, bio)
+      VALUES (${name}, ${email}, ${hashedPassword}, ${finalPhoneNumber}, ${role}, ${bio})
       RETURNING id;
     `;
     const newUserId = userResult.rows[0].id;
 
+    if (image && image.size > 0 && image.name !== 'undefined') {
+      try {
+        console.log('[Server Action] Uploading profile image to Vercel Blob...');
+        const blob = await put(image.name, image, {
+          access: 'public',
+          addRandomSuffix: true,
+          token: process.env.BESTRONGBLOB_READ_WRITE_TOKEN,
+        });
+        console.log('[Server Action] Profile image uploaded. URL:', blob.url);
+
+        await sql`
+                UPDATE users
+                SET profile_image = ${blob.url}
+                WHERE id = ${newUserId}
+    `;
+
+      } catch (uploadError) {
+        console.error('Blob Upload Error:', uploadError);
+        // We don't fail the whole user creation if image fails, just log it.
+        // Or we could return a warning.
+      }
+    }
+
     await sql`
-      INSERT INTO addresses (user_id, street, city, state, zip_code, country)
-      VALUES (${newUserId}, ${street}, ${city}, ${state}, ${zip_code}, ${country});
+      INSERT INTO addresses(user_id, street, city, state, zip_code, country)
+    VALUES(${newUserId}, ${street}, ${city}, ${state}, ${zip_code}, ${country});
     `;
 
     await sql.query('COMMIT');
@@ -158,7 +191,7 @@ export async function createProduct(prevState: State, formData: FormData): Promi
       message: 'You must be logged in to create a product.',
     };
   }
-  console.log(`[Server Action] User authenticated: ${session.user.id}`);
+  console.log(`[Server Action] User authenticated: ${session.user.id} `);
 
   const validatedFields = ProductSchema.safeParse({
     name: formData.get('name'),
@@ -194,16 +227,16 @@ export async function createProduct(prevState: State, formData: FormData): Promi
     console.log('[Server Action] Database transaction started.');
 
     const productResult = await sql`
-      INSERT INTO products (seller_id, name, description, price, quantity, category, isActive)
-      VALUES (${sellerId}, ${name}, ${description}, ${price}, ${quantity}, ${category}, TRUE)
+      INSERT INTO products(seller_id, name, description, price, quantity, category, isActive)
+    VALUES(${sellerId}, ${name}, ${description}, ${price}, ${quantity}, ${category}, TRUE)
       RETURNING id
-    `;
+      `;
     const productId = productResult.rows[0].id;
-    console.log(`[Server Action] Inserted into 'products' table. New product ID: ${productId}`);
+    console.log(`[Server Action] Inserted into 'products' table.New product ID: ${productId} `);
 
     await sql`
-      INSERT INTO product_images (product_id, image_url, is_primary)
-      VALUES (${productId}, ${blob.url}, ${true})
+      INSERT INTO product_images(product_id, image_url, is_primary)
+    VALUES(${productId}, ${blob.url}, ${true})
     `;
 
     await sql.query('COMMIT');
@@ -212,7 +245,7 @@ export async function createProduct(prevState: State, formData: FormData): Promi
     await sql.query('ROLLBACK');
     console.error('[Server Action] Database transaction failed. Rolling back.', error);
     return {
-      message: `Database Error: Failed to Create Product. ${(error as Error).message}`,
+      message: `Database Error: Failed to Create Product.${(error as Error).message} `,
     };
   }
 
@@ -290,8 +323,8 @@ export async function updateProduct(id: string, prevState: State, formData: Form
     return { message: 'Database Error: Failed to Update Product.' };
   }
 
-  revalidatePath(`/dashboard/products`);
-  revalidatePath(`/dashboard/products/${id}/edit`);
+  revalidatePath(`/ dashboard / products`);
+  revalidatePath(`/ dashboard / products / ${id}/edit`);
   revalidatePath('/products');
   revalidatePath(`/products/${id}`);
   revalidatePath('/', 'layout');
@@ -484,6 +517,14 @@ export async function placeOrder(orderId: number) {
 
 const ProfileSchema = z.object({
   bio: z.string().max(500, { message: 'Bio must be 500 characters or less.' }).optional(),
+  image: z
+    .instanceof(File)
+    .refine((file) => file.size <= 5 * 1024 * 1024, `Max image size is 5MB.`)
+    .refine(
+      (file) => ['image/jpeg', 'image/png', 'image/webp'].includes(file.type),
+      'Only .jpg, .png, and .webp formats are supported.'
+    )
+    .optional(),
 });
 
 export async function updateProfile(prevState: State, formData: FormData): Promise<State> {
@@ -494,6 +535,7 @@ export async function updateProfile(prevState: State, formData: FormData): Promi
 
   const validatedFields = ProfileSchema.safeParse({
     bio: formData.get('bio'),
+    image: formData.get('image') || undefined,
   });
 
   if (!validatedFields.success) {
@@ -503,15 +545,43 @@ export async function updateProfile(prevState: State, formData: FormData): Promi
     };
   }
 
-  const { bio } = validatedFields.data;
+  const { bio, image } = validatedFields.data;
 
   try {
-    await sql`
-      UPDATE users
-      SET bio = ${bio}
-      WHERE id = ${session.user.id}
-    `;
-    console.log(`[Server Action] Updated bio for user ${session.user.id}`);
+    let imageUrl = null;
+
+    // Handle image upload if provided
+    if (image && image.size > 0 && image.name !== 'undefined') {
+      try {
+        console.log('[Server Action] Uploading profile image to Vercel Blob...');
+        const blob = await put(image.name, image, {
+          access: 'public',
+          addRandomSuffix: true,
+          token: process.env.BESTRONGBLOB_READ_WRITE_TOKEN,
+        });
+        imageUrl = blob.url;
+        console.log('[Server Action] Profile image uploaded. URL:', imageUrl);
+      } catch (uploadError) {
+        console.error('Blob Upload Error:', uploadError);
+        return { message: 'Failed to upload image.' };
+      }
+    }
+
+    if (imageUrl) {
+      await sql`
+            UPDATE users
+            SET bio = ${bio}, profile_image = ${imageUrl}
+            WHERE id = ${session.user.id}
+        `;
+    } else {
+      await sql`
+            UPDATE users
+            SET bio = ${bio}
+            WHERE id = ${session.user.id}
+        `;
+    }
+
+    console.log(`[Server Action] Updated profile for user ${session.user.id}`);
   } catch (error) {
     console.error('Database Error:', error);
     return { message: 'Database Error: Failed to update profile.' };

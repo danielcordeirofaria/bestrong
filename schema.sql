@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS users (
     password TEXT NOT NULL,
     phone_number VARCHAR(50),
     role user_role NOT NULL DEFAULT 'buyer',
-    bio TEXT
+    bio TEXT,
+    profile_image TEXT
 );
 
 -- 2. Addresses Table

@@ -101,7 +101,7 @@ export async function fetchProductsPages(
 export async function fetchSellerProfile(sellerId: string) {
   noStore();
   try {
-    const user = await sql`SELECT id, name, bio, email, role FROM users WHERE id = ${sellerId} AND role = 'seller'`;
+    const user = await sql`SELECT id, name, bio, email, role, profile_image FROM users WHERE id = ${sellerId} AND role = 'seller'`;
 
     if (user.rows.length === 0) {
       return null;

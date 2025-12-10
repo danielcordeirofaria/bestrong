@@ -21,9 +21,18 @@ export default async function SellerProfilePage({ params }: { params: { id: stri
         <div className="container mx-auto px-4 py-8">
             <div className="bg-white rounded-lg shadow-sm border border-ui-border p-6 mb-8 text-center md:text-left md:flex md:items-center md:gap-8">
                 <div className="relative h-24 w-24 mx-auto md:mx-0 rounded-full overflow-hidden bg-gray-200 border-2 border-primary">
-                    <span className="absolute inset-0 flex items-center justify-center text-3xl font-bold text-gray-500">
-                        {seller.name.charAt(0).toUpperCase()}
-                    </span>
+                    {seller.profile_image ? (
+                        <Image
+                            src={seller.profile_image}
+                            alt={seller.name}
+                            fill
+                            className="object-cover"
+                        />
+                    ) : (
+                        <span className="absolute inset-0 flex items-center justify-center text-3xl font-bold text-gray-500">
+                            {seller.name.charAt(0).toUpperCase()}
+                        </span>
+                    )}
                 </div>
                 <div>
                     <h1 className="text-3xl font-bold text-text-main mb-2">{seller.name}</h1>
