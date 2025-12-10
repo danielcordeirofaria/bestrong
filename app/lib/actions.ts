@@ -124,7 +124,7 @@ export async function createUser(prevState: State, formData: FormData): Promise<
         const blob = await put(image.name, image, {
           access: 'public',
           addRandomSuffix: true,
-          token: process.env.BESTRONGBLOB_READ_WRITE_TOKEN,
+          token: process.env.bestrongblob_READ_WRITE_TOKEN,
         });
         console.log('[Server Action] Profile image uploaded. URL:', blob.url);
 
