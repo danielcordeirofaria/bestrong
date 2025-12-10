@@ -43,6 +43,9 @@ const ProductSchema = z.object({
       (file) => ['image/jpeg', 'image/png', 'image/webp'].includes(file.type),
       'Only .jpg, .png, and .webp formats are supported.'
     ),
+  category: z.enum(['clothing', 'equipment', 'nutrition', 'merchandise'], {
+    invalid_type_error: 'Please select a valid category.',
+  }),
 });
 
 export type State = {
@@ -61,6 +64,7 @@ export type State = {
     price?: string[];
     quantity?: string[];
     image?: string[];
+    category?: string[];
   };
   message?: string | null;
 };
@@ -161,6 +165,7 @@ export async function createProduct(prevState: State, formData: FormData): Promi
     price: formData.get('price'),
     quantity: formData.get('quantity'),
     image: formData.get('image'),
+    category: formData.get('category'),
   });
 
   if (!validatedFields.success) {
@@ -171,8 +176,8 @@ export async function createProduct(prevState: State, formData: FormData): Promi
     };
   }
 
-  const { name, description, price, quantity, image } = validatedFields.data;
-  console.log('[Server Action] Validation successful. Data:', { name, description, price, quantity, imageName: image.name });
+  const { name, description, price, quantity, image, category } = validatedFields.data;
+  console.log('[Server Action] Validation successful. Data:', { name, description, price, quantity, category, imageName: image.name });
   const sellerId = session.user.id;
 
   try {
@@ -188,8 +193,8 @@ export async function createProduct(prevState: State, formData: FormData): Promi
     console.log('[Server Action] Database transaction started.');
 
     const productResult = await sql`
-      INSERT INTO products (seller_id, name, description, price, quantity, isActive)
-      VALUES (${sellerId}, ${name}, ${description}, ${price}, ${quantity}, TRUE)
+      INSERT INTO products (seller_id, name, description, price, quantity, category, isActive)
+      VALUES (${sellerId}, ${name}, ${description}, ${price}, ${quantity}, ${category}, TRUE)
       RETURNING id
     `;
     const productId = productResult.rows[0].id;
@@ -260,7 +265,9 @@ export async function updateProduct(id: string, prevState: State, formData: Form
     name: formData.get('name'),
     description: formData.get('description'),
     price: formData.get('price'),
+    price: formData.get('price'),
     quantity: formData.get('quantity'),
+    category: formData.get('category'),
   });
 
   if (!validatedFields.success) {
@@ -270,12 +277,11 @@ export async function updateProduct(id: string, prevState: State, formData: Form
     };
   }
 
-  const { name, description, price, quantity } = validatedFields.data;
+  const { name, description, price, quantity, category } = validatedFields.data;
 
   try {
-    await sql`
       UPDATE products
-      SET name = ${name}, description = ${description}, price = ${price}, quantity = ${quantity}
+      SET name = ${name}, description = ${description}, price = ${price}, quantity = ${quantity}, category = ${category}
       WHERE id = ${id} AND seller_id = ${session.user.id}
     `;
   } catch (error) {
