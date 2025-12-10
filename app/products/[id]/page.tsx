@@ -1,7 +1,7 @@
 import { sql } from '@vercel/postgres';
 import { notFound, redirect } from 'next/navigation';
 import Image from 'next/image';
-import React from 'react';
+import Link from 'next/link';
 import AddToCartButton from '@/components/ui/add-to-cart-button';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
@@ -12,6 +12,7 @@ type ProductDetails = {
   description: string | null;
   price: string;
   quantity: number;
+  seller_id: number;
   seller_name: string;
   images: { image_url: string }[];
 };
@@ -39,8 +40,8 @@ type ReviewRow = {
 
 async function getProductDetails(id: string): Promise<ProductDetails> {
   try {
-    const productData = await sql<ProductRow>`
-      SELECT p.id, p.name, p.description, p.price, p.quantity, u.name as seller_name
+    const productData = await sql`
+      SELECT p.id, p.name, p.description, p.price, p.quantity, u.name as seller_name, u.id as seller_id
       FROM products p
       JOIN users u ON p.seller_id = u.id
       WHERE p.id = ${id} AND p.quantity > 0;
@@ -65,6 +66,7 @@ async function getProductDetails(id: string): Promise<ProductDetails> {
       description: product.description,
       price: product.price,
       quantity: product.quantity,
+      seller_id: product.seller_id,
       seller_name: product.seller_name,
       images: imageData.rows as { image_url: string }[],
     };
@@ -173,6 +175,7 @@ export default async function ProductDetailPage({
           </p>
           <p className="mt-4 flex-grow text-secondary">
             {product.description}
+            Sold by <Link href={`/sellers/${product.seller_id}`} className="font-medium text-primary hover:underline">{product.seller_name}</Link>
           </p>
           <AddToCartButton productId={product.id} />
         </div>
