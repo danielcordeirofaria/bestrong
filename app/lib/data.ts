@@ -42,7 +42,7 @@ export async function fetchFilteredProducts(
         p.name,
         p.description,
         p.price,
-        p.image_url,
+        pi.image_url,
         p.category
       FROM products p
       LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = true
