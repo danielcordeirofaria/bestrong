@@ -173,7 +173,9 @@ export default async function ProductDetailPage({
           <p className="mt-4 flex-grow text-secondary">
             {product.description} Sold by <Link href={`/sellers/${product.seller_id}`} className="font-medium text-primary hover:underline">{product.seller_name}</Link>
           </p>
-          <AddToCartButton productId={product.id} />
+          {session?.user?.role === 'buyer' && (
+            <AddToCartButton productId={product.id} />
+          )}
         </div>
       </div>
 
