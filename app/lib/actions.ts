@@ -217,10 +217,11 @@ export async function createProduct(prevState: State, formData: FormData): Promi
 
   try {
     console.log('[Server Action] Uploading image to Vercel Blob...');
+    console.log('[Server Action] Token Check:', process.env.BESTRONGBLOB_READ_WRITE_TOKEN ? 'Token exists (starts with ' + process.env.BESTRONGBLOB_READ_WRITE_TOKEN.substring(0, 5) + '...)' : 'Token is MISSING');
     const blob = await put(image.name, image, {
       access: 'public',
       addRandomSuffix: true,
-      token: process.env.BESTRONGBLOB_READ_WRITE_TOKEN,
+      token: process.env.bestrongblob_READ_WRITE_TOKEN,
     });
     console.log('[Server Action] Image uploaded. URL:', blob.url);
 
@@ -558,7 +559,7 @@ export async function updateProfile(prevState: State, formData: FormData): Promi
         const blob = await put(image.name, image, {
           access: 'public',
           addRandomSuffix: true,
-          token: process.env.BESTRONGBLOB_READ_WRITE_TOKEN,
+          token: process.env.bestrongblob_READ_WRITE_TOKEN,
         });
         imageUrl = blob.url;
         console.log('[Server Action] Profile image uploaded. URL:', imageUrl);
