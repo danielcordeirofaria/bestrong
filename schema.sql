@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS products (
     description TEXT,
     price DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
     quantity INT NOT NULL CHECK (quantity >= 0),
-    isActive BOOLEAN DEFAULT TRUE
+    isActive BOOLEAN DEFAULT TRUE,
+    category VARCHAR(50)
 );
 
 -- 4. Product Images Table
