@@ -265,7 +265,7 @@ export async function updateProduct(id: string, prevState: State, formData: Form
     name: formData.get('name'),
     description: formData.get('description'),
     price: formData.get('price'),
-    price: formData.get('price'),
+
     quantity: formData.get('quantity'),
     category: formData.get('category'),
   });
@@ -280,6 +280,7 @@ export async function updateProduct(id: string, prevState: State, formData: Form
   const { name, description, price, quantity, category } = validatedFields.data;
 
   try {
+    await sql`
       UPDATE products
       SET name = ${name}, description = ${description}, price = ${price}, quantity = ${quantity}, category = ${category}
       WHERE id = ${id} AND seller_id = ${session.user.id}
