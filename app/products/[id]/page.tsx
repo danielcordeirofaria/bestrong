@@ -1,7 +1,7 @@
 import { sql } from '@vercel/postgres';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import React from 'react';
+import Link from 'next/link';
 import AddToCartButton from '@/components/ui/add-to-cart-button';
 
 type ProductDetails = {
@@ -10,6 +10,7 @@ type ProductDetails = {
   description: string | null;
   price: string;
   quantity: number;
+  seller_id: number;
   seller_name: string;
   images: { image_url: string }[];
 };
@@ -17,7 +18,7 @@ type ProductDetails = {
 async function getProductDetails(id: string): Promise<ProductDetails | undefined> {
   try {
     const productData = await sql`
-      SELECT p.id, p.name, p.description, p.price, p.quantity, u.name as seller_name
+      SELECT p.id, p.name, p.description, p.price, p.quantity, u.name as seller_name, u.id as seller_id
       FROM products p
       JOIN users u ON p.seller_id = u.id
       WHERE p.id = ${id} AND p.quantity > 0;
@@ -42,6 +43,7 @@ async function getProductDetails(id: string): Promise<ProductDetails | undefined
       description: product.description,
       price: product.price,
       quantity: product.quantity,
+      seller_id: product.seller_id,
       seller_name: product.seller_name,
       images: imageData.rows as { image_url: string }[],
     };
@@ -69,7 +71,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
         <div className="flex flex-col">
           <h1 className="font-serif text-3xl font-bold text-text-main">{product.name}</h1>
           <p className="mt-2 text-sm text-secondary">
-            Sold by <span className="font-medium text-primary">{product.seller_name}</span>
+            Sold by <Link href={`/sellers/${product.seller_id}`} className="font-medium text-primary hover:underline">{product.seller_name}</Link>
           </p>
           <p className="mt-4 text-2xl font-semibold text-text-main">${product.price}</p>
           <p className="mt-4 flex-grow text-secondary">{product.description}</p>

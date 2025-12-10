@@ -97,3 +97,37 @@ export async function fetchProductsPages(
     throw new Error('Failed to fetch total number of products.');
   }
 }
+
+export async function fetchSellerProfile(sellerId: string) {
+  noStore();
+  try {
+    const user = await sql`SELECT id, name, bio, email, role, profile_image FROM users WHERE id = ${sellerId} AND role = 'seller'`;
+
+    if (user.rows.length === 0) {
+      return null;
+    }
+
+    const products = await sql`
+        SELECT id, name, price, description, category, quantity, isActive 
+        FROM products 
+        WHERE seller_id = ${sellerId} AND isActive = true AND quantity > 0
+        ORDER BY id DESC
+    `;
+
+    const productsWithImages = await Promise.all(products.rows.map(async (product) => {
+      const image = await sql`SELECT image_url FROM product_images WHERE product_id = ${product.id} AND is_primary = true`;
+      return {
+        ...product,
+        image_url: image.rows[0]?.image_url || null
+      };
+    }));
+
+    return {
+      seller: user.rows[0],
+      products: productsWithImages
+    };
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch seller profile.');
+  }
+}

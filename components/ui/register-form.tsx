@@ -38,6 +38,24 @@ export default function RegisterForm() {
   const initialState: State = { message: null, errors: {} };
   const [state, formAction] = useFormState(createUser, initialState);
 
+  const [preview, setPreview] = React.useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = React.useState<string>('');
+
+  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedRole(e.target.value);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <>
       <div>
@@ -57,6 +75,38 @@ export default function RegisterForm() {
 
       <form action={formAction} className="mt-8 space-y-6">
         <div className="space-y-4">
+
+          <div className="flex flex-col items-center space-y-2">
+            <div className="relative h-24 w-24 overflow-hidden rounded-full bg-gray-100 border border-ui-border">
+              {preview ? (
+                <img
+                  src={preview}
+                  alt="Profile Preview"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-gray-400">
+                  <User className="h-10 w-10" />
+                </div>
+              )}
+            </div>
+            <label
+              htmlFor="image"
+              className="cursor-pointer rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            >
+              Upload Photo
+              <input
+                id="image"
+                name="image"
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={handleImageChange}
+              />
+            </label>
+            {state.errors?.image && <p className="text-sm text-red-500">{state.errors.image[0]}</p>}
+          </div>
+
           {/* Personal Information */}
           <div className="space-y-1">
             <label htmlFor="name" className="sr-only">Name</label>
@@ -103,15 +153,29 @@ export default function RegisterForm() {
                 required
                 className="input-field appearance-none"
                 defaultValue=""
+                onChange={handleRoleChange}
               >
                 <option value="" disabled>Select your role</option>
                 <option value="buyer">Buyer</option>
                 <option value="seller">Seller</option>
               </select>
-              <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
             </div>
             {state.errors?.role && <p className="text-sm text-red-500">{state.errors.role[0]}</p>}
           </div>
+
+          {selectedRole === 'seller' && (
+            <div className="space-y-1">
+              <label htmlFor="bio" className="sr-only">Bio / Story</label>
+              <textarea
+                id="bio"
+                name="bio"
+                rows={4}
+                className="input-field block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                placeholder="Tell us about your shop (Bio)..."
+              />
+              {state.errors?.bio && <p className="text-sm text-red-500">{state.errors.bio[0]}</p>}
+            </div>
+          )}
 
           {/* Divider */}
           <div className="relative py-2">
