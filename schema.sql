@@ -12,7 +12,9 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password TEXT NOT NULL,
     phone_number VARCHAR(50),
-    role user_role NOT NULL DEFAULT 'buyer'
+    role user_role NOT NULL DEFAULT 'buyer',
+    bio TEXT,
+    profile_image TEXT
 );
 
 -- 2. Addresses Table
@@ -34,7 +36,8 @@ CREATE TABLE IF NOT EXISTS products (
     description TEXT,
     price DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
     quantity INT NOT NULL CHECK (quantity >= 0),
-    isActive BOOLEAN DEFAULT TRUE
+    isActive BOOLEAN DEFAULT TRUE,
+    category VARCHAR(50)
 );
 
 -- 4. Product Images Table

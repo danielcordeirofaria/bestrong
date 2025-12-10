@@ -5,6 +5,7 @@ export type User = {
   password: string; // This will be a hashed password.
   phone_number?: string | null;
   role: 'buyer' | 'seller';
+  bio?: string | null;
 };
 
 export type Address = {
@@ -24,7 +25,8 @@ export type Product = {
   description?: string | null;
   price: number; // DECIMAL(10, 2)
   quantity: number; // INT
-  isActive?: boolean; // New column for soft delete
+  isActive: boolean;
+  category: string;
 };
 
 export type ProductImage = {

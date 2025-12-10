@@ -6,6 +6,7 @@ import {
   DollarSign,
   Boxes,
   Image as ImageIcon,
+  Tag,
 } from 'lucide-react';
 
 function ProductForm({ initialData = {}, isLoading = false, serverErrors = {} }) {
@@ -14,6 +15,7 @@ function ProductForm({ initialData = {}, isLoading = false, serverErrors = {} })
     description: '',
     price: '',
     quantity: '',
+    category: '',
     ...initialData,
   });
   const [imageFile, setImageFile] = useState(null);
@@ -89,7 +91,7 @@ function ProductForm({ initialData = {}, isLoading = false, serverErrors = {} })
                 type="number"
                 placeholder="Quantity in Stock"
                 required
-                min="1"
+                min="0"
                 step="1"
                 value={product.quantity}
                 onChange={handleChange}
@@ -101,6 +103,30 @@ function ProductForm({ initialData = {}, isLoading = false, serverErrors = {} })
             )}
           </div>
         </div>
+
+        <div className="space-y-1">
+            <label htmlFor="category" className="sr-only">Category</label>
+            <div className="relative">
+              <Tag className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <select
+                id="category"
+                name="category"
+                required
+                value={product.category || ''}
+                onChange={handleChange}
+                className="input-field appearance-none"
+              >
+                <option value="" disabled>Select a Category</option>
+                <option value="clothing">Clothing</option>
+                <option value="equipment">Equipment</option>
+                <option value="nutrition">Nutrition</option>
+                <option value="merchandise">Merchandise</option>
+              </select>
+            </div>
+            {serverErrors?.category && (
+              <p className="mt-1 text-sm text-red-500">{serverErrors.category[0]}</p>
+            )}
+          </div>
 
         <div className="space-y-1">
           <label htmlFor="image" className="sr-only">Main Product Image</label>
