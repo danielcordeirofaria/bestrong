@@ -70,10 +70,20 @@ async function getProductDetails(id: string): Promise<ProductDetails> {
       seller_name: product.seller_name,
       images: imageData.rows as { image_url: string }[],
     };
+
   } catch (error) {
     console.error('Database Error fetching product details:', error);
     notFound();
   }
+}
+
+export async function generateMetadata({ params }: { params: { id: string } }) {
+  const product = await getProductDetails(params.id);
+
+  return {
+    title: product.name,
+    description: product.description || `Buy ${product.name} at Handcrafted Haven`,
+  };
 }
 
 export default async function ProductDetailPage({
@@ -84,7 +94,6 @@ export default async function ProductDetailPage({
   const session = await auth();
   const product = await getProductDetails(params.id);
 
-  // --- FETCH REVIEWS ---
   const { rows: reviewRows } = await sql<ReviewRow>`
     SELECT
       r.id,
@@ -106,7 +115,6 @@ export default async function ProductDetailPage({
     product.images[0]?.image_url ||
     'https://httpstatusdogs.com/img/404.jpg';
 
-  // --- SERVER ACTION TO SUBMIT / UPDATE REVIEW ---
   async function submitReview(formData: FormData) {
     'use server';
 

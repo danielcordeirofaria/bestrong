@@ -1,6 +1,22 @@
 import { fetchSellerProfile } from '@/app/lib/data';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Metadata } from 'next';
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+    const profile = await fetchSellerProfile(params.id);
+
+    if (!profile) {
+        return {
+            title: 'Seller Not Found',
+        };
+    }
+
+    return {
+        title: profile.seller.name,
+        description: profile.seller.bio || `Check out ${profile.seller.name}'s profile on Handcrafted Haven`,
+    };
+}
 
 export default async function SellerProfilePage({ params }: { params: { id: string } }) {
     const profile = await fetchSellerProfile(params.id);
