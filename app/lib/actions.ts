@@ -65,6 +65,7 @@ export type State = {
     quantity?: string[];
     image?: string[];
     category?: string[];
+    bio?: string[];
   };
   message?: string | null;
 };
@@ -479,4 +480,44 @@ export async function placeOrder(orderId: number) {
   revalidatePath('/cart');
   revalidatePath('/products', 'layout');
   redirect(`/order/success/${orderId}`);
+}
+
+const ProfileSchema = z.object({
+  bio: z.string().max(500, { message: 'Bio must be 500 characters or less.' }).optional(),
+});
+
+export async function updateProfile(prevState: State, formData: FormData): Promise<State> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { message: 'Authentication required.' };
+  }
+
+  const validatedFields = ProfileSchema.safeParse({
+    bio: formData.get('bio'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors as any,
+      message: 'Invalid input.',
+    };
+  }
+
+  const { bio } = validatedFields.data;
+
+  try {
+    await sql`
+      UPDATE users
+      SET bio = ${bio}
+      WHERE id = ${session.user.id}
+    `;
+    console.log(`[Server Action] Updated bio for user ${session.user.id}`);
+  } catch (error) {
+    console.error('Database Error:', error);
+    return { message: 'Database Error: Failed to update profile.' };
+  }
+
+  revalidatePath('/dashboard/profile');
+  revalidatePath(`/sellers/${session.user.id}`);
+  return { message: 'Profile updated successfully!' };
 }

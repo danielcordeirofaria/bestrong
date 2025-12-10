@@ -5,6 +5,7 @@ export type User = {
   password: string; // This will be a hashed password.
   phone_number?: string | null;
   role: 'buyer' | 'seller';
+  bio?: string | null;
 };
 
 export type Address = {

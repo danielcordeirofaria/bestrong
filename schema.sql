@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password TEXT NOT NULL,
     phone_number VARCHAR(50),
-    role user_role NOT NULL DEFAULT 'buyer'
+    role user_role NOT NULL DEFAULT 'buyer',
+    bio TEXT
 );
 
 -- 2. Addresses Table
